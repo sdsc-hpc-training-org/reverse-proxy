@@ -1,5 +1,6 @@
 #!/bin/bash
 
+#SBATCH -A ddp363
 #SBATCH --nodes=1
 #SBATCH --ntasks-per-node=24
 #SBATCH -p debug
@@ -7,16 +8,12 @@
 #SBATCH -o /dev/null
 #SBATCH --wait 0
 
-echo $1
-echo $2
-echo $3
-
 API_TOKEN=$1
 TMPFILE=$3
 
 # Get the comet node's IP
 IP="$(hostname -s).local"
-jupyter notebook --ip $IP --config "$TMPFILE".py | tee $TMPFILE &
+jupyter lab --ip $IP --config "$TMPFILE".py | tee $TMPFILE &
 
 # Waits for the notebook to start and gets the port
 PORT=""

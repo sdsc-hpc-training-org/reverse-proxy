@@ -26,7 +26,7 @@ function start_notebook () {
     echo -e Your notebook is here:"\n" https://"$API_TOKEN".comet-user-content.sdsc.edu?token="$JUPYTER_TOKEN"
     
     # start the batch script with the api token and the starting directory
-    sbatch batch_notebook.sh $API_TOKEN $1 $TMPFILE &> /dev/null
+    sbatch batch_notebook.sh $API_TOKEN $1 $TMPFILE #&> /dev/null
 }
 
 # $1 should be the path to start the notebook from
