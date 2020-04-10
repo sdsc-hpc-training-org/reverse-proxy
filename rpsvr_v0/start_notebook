@@ -1,10 +1,17 @@
 #!/bin/bash
+start_dir=""
+runtime=""
+allocation=""
 
 # Entry point for starting a notebook. Handles slurm processes and retrives url from slurm output
 function start_notebook () {
-
+    echo "Start Notebook Variable States"
+    echo "Start Dir: $start_dir"
+    echo "Time Allotment: $runtime"
+    echo "Allocation: $allocation"
+    
     # get the Reversse proxy API_TOKEN
-    API_TOKEN_RESPONSE=$(curl -s https://manage.comet-user-content.sdsc.edu/getlink.cgi)
+    API_TOKEN_RESPONSE=$(curl -s https://www.comet-user-content.sdsc.edu/getlink.cgi)
     API_TOKEN=${API_TOKEN_RESPONSE#*"Your token is "} #strip the token out of response
     API_TOKEN=$(echo "$API_TOKEN" | tr '\n' ' ') # removes the newline char
     API_TOKEN=$(echo "$API_TOKEN" | xargs) # remove extra spaces before or after
@@ -26,8 +33,79 @@ function start_notebook () {
     echo -e Your notebook is here:"\n" https://"$API_TOKEN".comet-user-content.sdsc.edu?token="$JUPYTER_TOKEN"
     
     # start the batch script with the api token and the starting directory
-    sbatch batch_notebook.sh $API_TOKEN $1 $TMPFILE #&> /dev/null
+    # Argument 1 is the RP api token
+    # Argument 2 is the starting directory
+    # Argument 3 is the tmpfile path
+    if [ "$runtime" = "" ]; then
+        echo "No time allotment given." 
+    fi
+    sbatch -t $runtime -A $allocation batch_notebook.sh $API_TOKEN $start_dir $TMPFILE
 }
 
-# $1 should be the path to start the notebook from
-start_notebook $1
+# Arg 1 is the time to parse
+# any other args are invalid and will be ignored
+parse_time() {
+    IFS=':' read -ra TIME <<< "$1"
+    IFS=' '
+    echo ${#TIME[*]}
+    if [ ${#TIME[*]} -ne 3 ]
+    then
+        if [ ${#TIME[*]} = 1 ]
+        then
+            if [ ${TIME[0]} -ge 60 ]
+            then
+                # then divide it up into hours, minutes, etc
+                hrs=$(( ${TIME[0]}/60 ))
+                min=$(( ${TIME[0]}%60 ))
+                echo "$hrs:$min:00"
+                return 0
+            elif [ ${TIME} -le 0 ]
+            then
+                echo "Error: Negative Time Invalid"
+                exit 1
+            else
+                echo "00:${TIME[0]}:00"
+                return 0
+            fi
+        else
+            echo "Error: Invalid time format"
+            exit 1
+        fi
+    else
+        echo $1
+        return 1
+    fi
+}
+
+usage() { echo "Usage: $0 [-d <string>] [-A <string>] [time]" 1>&2; }
+
+OPTIND=1
+while getopts "h?:d:A:" opt; do
+    case "$opt" in
+        h|\?)
+            usage 
+            exit 0
+            ;;
+        d)  start_dir=$OPTARG 
+            echo $start_dir
+            ;;
+        A)  allocation=$OPTARG
+            echo $allocation
+            ;;
+        *)  echo "Error: invalid optional argument $OPTARG" 
+            usage 
+            exit 1
+            ;;
+    esac
+done
+echo $OPTIND
+echo $#
+# check for the required positional argument
+if [ $(( $# - $OPTIND )) -lt 0 ]; then
+    echo "Error: couldn't find required positional argument"
+    usage
+    exit 1
+fi
+runtime=$(parse_time ${@:$OPTIND:1})
+
+start_notebook $start_dir $runtime $allocation

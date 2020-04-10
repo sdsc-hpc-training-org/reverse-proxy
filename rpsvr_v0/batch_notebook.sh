@@ -1,12 +1,20 @@
 #!/bin/bash
 
-#SBATCH -A ddp363
+# Argument 1 should be the Reverse Proxy API token
+# Argument 2 should be the starting directory
+# Argument 3 should be the tmpfile path
+# Argument 4 should be the time allotment
+
 #SBATCH --nodes=1
 #SBATCH --ntasks-per-node=24
 #SBATCH -p debug
-#SBATCH -t 00:30:00
-#SBATCH -o /dev/null
 #SBATCH --wait 0
+
+echo "Batch Notebook Variables"
+echo "Arg1 - Proxy API Token = $1"
+echo "Arg2 - Start Dir       = $2"
+echo "Arg3 - Tmpfile         = $3"
+echo "Arg4 - Time            = $4"
 
 API_TOKEN=$1
 TMPFILE=$3
