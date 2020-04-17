@@ -1,36 +1,41 @@
 #!/bin/bash
-start_dir=""
-runtime=""
+start_dir="~"
+runtime="00:30:00"
 allocation=""
 
 # Entry point for starting a notebook. Handles slurm processes and retrives url from slurm output
 function start_notebook () {
-    echo "Start Notebook Variable States"
     echo "Start Dir: $start_dir"
-    echo "Time Allotment: $runtime"
+    echo "Time: $runtime"
     echo "Allocation: $allocation"
     
     # get the Reversse proxy API_TOKEN
-    API_TOKEN_RESPONSE=$(curl -s https://www.comet-user-content.sdsc.edu/getlink.cgi)
-    API_TOKEN=${API_TOKEN_RESPONSE#*"Your token is "} #strip the token out of response
-    API_TOKEN=$(echo "$API_TOKEN" | tr '\n' ' ') # removes the newline char
-    API_TOKEN=$(echo "$API_TOKEN" | xargs) # remove extra spaces before or after
+    api_token_response=$(curl -s https://manage.comet-user-content.sdsc.edu/getlink.cgi)
+    api_token=${api_token_response#*"Your token is "} #strip the token out of response
+    api_token=$(echo "$api_token" | tr '\n' ' ') # removes the newline char
+    api_token=$(echo "$api_token" | xargs) # remove extra spaces before or after
 
+    if [[ $api_token_response == Oops!* ]]
+    then
+        echo $api_token_response
+        exit 1
+    fi
+        
     mkdir -m 600 -p ~/.jupyter_secure
-    TMPFILE=`mktemp -p ~/.jupyter_secure` || exit 1
+    tmpfile=`mktemp -p ~/.jupyter_secure` || exit 1
 
     # Make a random ssl token
-    JUPYTER_TOKEN=$(openssl rand -hex 16)
+    jupyter_token=$(openssl rand -hex 16)
 
     # Create the temp config file
-    touch "$TMPFILE".py
-    echo "c.NotebookApp.token = '$JUPYTER_TOKEN'" | cat >> "$TMPFILE".py
-    echo "c.NotebookApp.notebook_dir = '$1'" | cat >> "$TMPFILE".py
-    echo "c.NotebookApp.allow_origin = '*'" | cat >> "$TMPFILE".py
-    echo "c.NotebookApp.allow_remote_access = True" | cat >> "$TMPFILE".py
+    touch "$tmpfile".py
+    echo "c.NotebookApp.token = '$jupyter_token'" | cat >> "$tmpfile".py
+    echo "c.NotebookApp.notebook_dir = '$1'" | cat >> "$tmpfile".py
+    echo "c.NotebookApp.allow_origin = '*'" | cat >> "$tmpfile".py
+    echo "c.NotebookApp.allow_remote_access = True" | cat >> "$tmpfile".py
 
     # Give the user the start of their url
-    echo -e Your notebook is here:"\n" https://"$API_TOKEN".comet-user-content.sdsc.edu?token="$JUPYTER_TOKEN"
+    echo -e Your notebook is here:"\n" https://"$api_token".comet-user-content.sdsc.edu?token="$jupyter_token"
     
     # start the batch script with the api token and the starting directory
     # Argument 1 is the RP api token
@@ -39,7 +44,11 @@ function start_notebook () {
     if [ "$runtime" = "" ]; then
         echo "No time allotment given." 
     fi
-    sbatch -t $runtime -A $allocation batch_notebook.sh $API_TOKEN $start_dir $TMPFILE
+    if [ "$allocation" = "" ]; then
+        sbatch -t $runtime batch_notebook.sh $api_token $start_dir $tmpfile
+    else
+        sbatch -t $runtime -A $allocation batch_notebook.sh $api_token $start_dir $tmpfile
+    fi
 }
 
 # Arg 1 is the time to parse
@@ -47,7 +56,6 @@ function start_notebook () {
 parse_time() {
     IFS=':' read -ra TIME <<< "$1"
     IFS=' '
-    echo ${#TIME[*]}
     if [ ${#TIME[*]} -ne 3 ]
     then
         if [ ${#TIME[*]} = 1 ]
@@ -77,7 +85,12 @@ parse_time() {
     fi
 }
 
-usage() { echo "Usage: $0 [-d <string>] [-A <string>] [time]" 1>&2; }
+usage() { 
+    echo "Usage: $0 [-d <string>] [-A <string>] [time]" 1>&2; 
+    echo Default Dir: ~
+    echo Default Allocation is your sbatch default allocation
+    echo Default Time is 30 mins
+}
 
 OPTIND=1
 while getopts "h?:d:A:" opt; do
@@ -87,10 +100,8 @@ while getopts "h?:d:A:" opt; do
             exit 0
             ;;
         d)  start_dir=$OPTARG 
-            echo $start_dir
             ;;
         A)  allocation=$OPTARG
-            echo $allocation
             ;;
         *)  echo "Error: invalid optional argument $OPTARG" 
             usage 
@@ -98,14 +109,11 @@ while getopts "h?:d:A:" opt; do
             ;;
     esac
 done
-echo $OPTIND
-echo $#
-# check for the required positional argument
-if [ $(( $# - $OPTIND )) -lt 0 ]; then
-    echo "Error: couldn't find required positional argument"
-    usage
-    exit 1
+
+# check for positional argument
+if [ $(( $# - $OPTIND )) -ge 0 ]; then
+    runtime=$(parse_time ${@:$OPTIND:1})
 fi
-runtime=$(parse_time ${@:$OPTIND:1})
+
 
 start_notebook $start_dir $runtime $allocation
