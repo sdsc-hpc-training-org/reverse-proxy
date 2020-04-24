@@ -7,14 +7,8 @@
 
 #SBATCH --nodes=1
 #SBATCH --ntasks-per-node=24
-#SBATCH -p debug
+#SBATCH -p compute
 #SBATCH --wait 0
-
-echo "Batch Notebook Variables"
-echo "Arg1 - Proxy API Token = $1"
-echo "Arg2 - Start Dir       = $2"
-echo "Arg3 - Tmpfile         = $3"
-echo "Arg4 - Time            = $4"
 
 API_TOKEN=$1
 TMPFILE=$3

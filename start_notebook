@@ -12,6 +12,7 @@ function start_notebook () {
     echo "Start Dir: $start_dir"
     echo "Time: $runtime"
     echo "Allocation: $allocation"
+
     
     # get the Reversse proxy API_TOKEN
     api_token_response=$(curl -s https://manage.comet-user-content.sdsc.edu/getlink.cgi)
@@ -39,12 +40,15 @@ function start_notebook () {
     echo "c.NotebookApp.allow_remote_access = True" | cat >> "$tmpfile".py
 
     # Give the user the start of their url
-    echo -e Your notebook is here:"\n" https://"$api_token".comet-user-content.sdsc.edu?token="$jupyter_token"
-    
+    export jupyter_url="https://$api_token.comet-user-content.sdsc.edu?token=$jupyter_token"
+    echo Your notebook is here:
+    echo -e "\t$jupyter_url"
+
     # start the batch script with the api token and the starting directory
     # Argument 1 is the RP api token
     # Argument 2 is the starting directory
     # Argument 3 is the tmpfile path
+
     if [ "$runtime" = "" ]; then
         echo "No time allotment given." 
     fi
@@ -69,6 +73,14 @@ parse_time() {
                 # then divide it up into hours, minutes, etc
                 hrs=$(( ${TIME[0]}/60 ))
                 min=$(( ${TIME[0]}%60 ))
+                hrsiz=${#hrs}
+                minsiz=${#min}
+                if [ $hrsiz -lt 2 ]; then
+                    hrs="0$hrs"
+                fi
+                if [ $minsiz -lt 2 ]; then
+                    min="0$min"
+                fi
                 echo "$hrs:$min:00"
                 return 0
             elif [ ${TIME} -le 0 ]
