@@ -26,7 +26,7 @@ function start_notebook () {
         exit 1
     fi
         
-    mkdir -m 600 -p ~/.jupyter_secure
+    mkdir -m 700 -p ~/.jupyter_secure
     tmpfile=`mktemp -p ~/.jupyter_secure` || exit 1
 
     # Make a random ssl token
