@@ -3,16 +3,12 @@
 # The goal of this script is to start a jupyter notebook on comet by using the Reverse Proxy service.
 # This makes a secure connection between the user's local machine and the RP server.
 
-start_dir="~"
+start_dir=""
 runtime="00:30:00"
 allocation=""
 
 # Entry point for starting a notebook. Handles slurm processes and retrives url from slurm output
 function start_notebook () {
-    echo "Start Dir: $start_dir"
-    echo "Time: $runtime"
-    echo "Allocation: $allocation"
-
     
     # get the Reversse proxy API_TOKEN
     api_token_response=$(curl -s https://manage.comet-user-content.sdsc.edu/getlink.cgi)
@@ -26,7 +22,8 @@ function start_notebook () {
         exit 1
     fi
         
-    mkdir -m 600 -p ~/.jupyter_secure
+    mkdir -p ~/.jupyter_secure
+    chmod 777 ~/.jupyter_secure
     tmpfile=`mktemp -p ~/.jupyter_secure` || exit 1
 
     # Make a random ssl token
@@ -35,7 +32,12 @@ function start_notebook () {
     # Create the temp config file
     touch "$tmpfile".py
     echo "c.NotebookApp.token = '$jupyter_token'" | cat >> "$tmpfile".py
-    echo "c.NotebookApp.notebook_dir = '$1'" | cat >> "$tmpfile".py
+
+    if [ "$start_dir" = "" ]; then
+        echo "c.NotebookApp.notebook_dir = '/home/$USER/'" | cat >> "$tmpfile".py 
+    else
+        echo "c.NotebookApp.notebook_dir = '$start_dir'" | cat >> "$tmpfile".py
+    fi
     echo "c.NotebookApp.allow_origin = '*'" | cat >> "$tmpfile".py
     echo "c.NotebookApp.allow_remote_access = True" | cat >> "$tmpfile".py
 
@@ -46,16 +48,16 @@ function start_notebook () {
 
     # start the batch script with the api token and the starting directory
     # Argument 1 is the RP api token
-    # Argument 2 is the starting directory
-    # Argument 3 is the tmpfile path
+    # Argument 2 is the tmpfile path
 
     if [ "$runtime" = "" ]; then
         echo "No time allotment given." 
     fi
     if [ "$allocation" = "" ]; then
-        sbatch -t $runtime batch_notebook.sh $api_token $start_dir $tmpfile
+        echo "Using default allocation"
+        sbatch -t $runtime batch_notebook.sh $api_token $tmpfile
     else
-        sbatch -t $runtime -A $allocation batch_notebook.sh $api_token $start_dir $tmpfile
+        sbatch -t $runtime -A $allocation batch_notebook.sh $api_token $tmpfile
     fi
 }
 
