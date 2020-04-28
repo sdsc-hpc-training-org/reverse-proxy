@@ -133,5 +133,4 @@ if [ $(( $# - $OPTIND )) -ge 0 ]; then
     runtime=$(parse_time ${@:$OPTIND:1})
 fi
 
-
 start_notebook $start_dir $runtime $allocation
