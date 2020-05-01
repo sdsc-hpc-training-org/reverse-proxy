@@ -117,10 +117,9 @@ while getopts "h?:d:A:" opt; do
             usage 
             exit 0
             ;;
-        d)  start_dir=$OPTARG 
-            ;;
-        A)  project=$OPTARG
-            ;;
+        d)  start_dir=$OPTARG ;;
+        A)  project=$OPTARG   ;;
+        p)  partition=$OPTARG ;;
         *)  echo "Error: invalid optional argument $OPTARG" 
             usage 
             exit 1
