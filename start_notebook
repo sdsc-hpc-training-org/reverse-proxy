@@ -5,7 +5,7 @@
 
 start_dir=""
 runtime="00:30:00"
-allocation=""
+project=""
 
 # Entry point for starting a notebook. Handles slurm processes and retrives url from slurm output
 function start_notebook () {
@@ -53,11 +53,11 @@ function start_notebook () {
     if [ "$runtime" = "" ]; then
         echo "No time allotment given." 
     fi
-    if [ "$allocation" = "" ]; then
-        echo "Using default allocation"
+    if [ "$project" = "" ]; then
+        echo "Using default project"
         sbatch -t $runtime batch_notebook.sh $api_token $tmpfile
     else
-        sbatch -t $runtime -A $allocation batch_notebook.sh $api_token $tmpfile
+        sbatch -t $runtime -A $project batch_notebook.sh $api_token $tmpfile
     fi
 }
 
@@ -106,7 +106,7 @@ parse_time() {
 usage() { 
     echo "Usage: $0 [-d <string>] [-A <string>] [time]" 1>&2; 
     echo Default Dir: ~
-    echo Default Allocation is your sbatch default allocation
+    echo Default project is your sbatch default project
     echo Default Time is 30 mins
 }
 
@@ -119,7 +119,7 @@ while getopts "h?:d:A:" opt; do
             ;;
         d)  start_dir=$OPTARG 
             ;;
-        A)  allocation=$OPTARG
+        A)  project=$OPTARG
             ;;
         *)  echo "Error: invalid optional argument $OPTARG" 
             usage 
@@ -133,4 +133,4 @@ if [ $(( $# - $OPTIND )) -ge 0 ]; then
     runtime=$(parse_time ${@:$OPTIND:1})
 fi
 
-start_notebook $start_dir $runtime $allocation
+start_notebook $start_dir $runtime $project
