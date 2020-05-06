@@ -1,10 +1,7 @@
 # SDSC Reverse Proxy Service
 
-## Notes:
-* we should remind people about software dependencies: 
-   * loading modules and environments: this works by
-       * installing module and reloading the notebook, you don't have kill the job.
-
+Prerequesites:
+* Anaconda
 The reverse proxy service relies on you handling your own python package installation. It was designed with Anaconda in mind {?Miniconda?}. You can install Anaconda on your login node using wget: `wget https://repo.continuum.io/archive/Anaconda3-2018.12-Linux-x86_64.sh`.
 
 Many data scientists are very familiar with Anaconda. If not, check it out [here](https://www.anaconda.com/products/individual)
