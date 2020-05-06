@@ -1,12 +1,17 @@
 # SDSC Reverse Proxy Service
 
-Prerequesites:
-* Anaconda
-The reverse proxy service relies on you handling your own python package installation. It was designed with Anaconda in mind {?Miniconda?}. You can install Anaconda on your login node using wget: `wget https://repo.continuum.io/archive/Anaconda3-2018.12-Linux-x86_64.sh`.
+### Prerequesites:
 
-Many data scientists are very familiar with Anaconda. If not, check it out [here](https://www.anaconda.com/products/individual)
+#### Anaconda
+The reverse proxy service relies on you handling your own python package installation. It was designed with Anaconda in mind. You can install Anaconda on your login node using wget: `wget https://repo.continuum.io/archive/Anaconda3-2018.12-Linux-x86_64.sh`. More info [here](https://stackoverflow.com/questions/38080407/how-can-i-install-the-latest-anaconda-with-wget#38080641).
 
-You can install python packages in a conda environment while your notebook is running. This is useful if you forgot a package, you won't have to worry about cancelling and restarting your job before installing.
+If you're not familiar with Anaconda, check it out [here](https://www.anaconda.com/products/individual).
+
+You can install python packages in a conda environment while your notebook is running. This is useful if you forgot a package, you won't have to worry about cancelling and restarting your job before installing. However, it is recommended that you install all required packages beforehand to save yourself valuable compute time.
+
+#### Python Packages
+You'll need to install jupyter using `conda install jupyter`. More info [here](https://anaconda.org/anaconda/jupyter).
+If you want to use jupyterlab, install that.
 
 ### Usage: ./start_notebook.sh [-p <string>] [-d <string>] [-A <string>] [time]
   
