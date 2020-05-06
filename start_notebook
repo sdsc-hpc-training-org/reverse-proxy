@@ -6,6 +6,7 @@
 start_dir=""
 runtime="00:30:00"
 project=""
+partition=""
 
 # Entry point for starting a notebook. Handles slurm processes and retrives url from slurm output
 function start_notebook () {
@@ -50,14 +51,18 @@ function start_notebook () {
     # Argument 1 is the RP api token
     # Argument 2 is the tmpfile path
 
+    if [ "$partition" = "" ]; then
+        echo "Using default partition: compute"
+        partition="compute"
+    fi
     if [ "$runtime" = "" ]; then
         echo "No time allotment given." 
     fi
     if [ "$project" = "" ]; then
         echo "Using default project"
-        sbatch -t $runtime batch_notebook.sh $api_token $tmpfile
+        sbatch -t $runtime -p $partition batch_notebook.sh $api_token $tmpfile
     else
-        sbatch -t $runtime -A $project batch_notebook.sh $api_token $tmpfile
+        sbatch -t $runtime -A $project -p $partition batch_notebook.sh $api_token $tmpfile
     fi
 }
 
