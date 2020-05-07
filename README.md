@@ -1,17 +1,24 @@
 # SDSC Reverse Proxy Service
 
-### Prerequesites:
+## Prerequesites:
 
-#### Anaconda
+#### 0) This repo
+Clone this repository directly into your comet login node.  
+
+#### 1) Anaconda
 The reverse proxy service relies on you handling your own python package installation. It was designed with Anaconda in mind. You can install Anaconda on your login node using wget: `wget https://repo.continuum.io/archive/Anaconda3-2018.12-Linux-x86_64.sh`. More info [here](https://stackoverflow.com/questions/38080407/how-can-i-install-the-latest-anaconda-with-wget#38080641).
 
 If you're not familiar with Anaconda, check it out [here](https://www.anaconda.com/products/individual).
 
-You can install python packages in a conda environment while your notebook is running. This is useful if you forgot a package, you won't have to worry about cancelling and restarting your job before installing. However, it is recommended that you install all required packages beforehand to save yourself valuable compute time.
-
-#### Python Packages
+#### 2) Jupyter
 You'll need to install jupyter using `conda install jupyter`. More info [here](https://anaconda.org/anaconda/jupyter).
 If you want to use jupyterlab, install that.
+
+#### 3) Other Python Packages
+Any other Python packages you need to run your notebook should be installed with Conda. You can install python packages in a conda environment while your notebook is running. This is useful if you forgot a package, you won't have to worry about cancelling and restarting your job before installing. However, it is recommended that you install all required packages beforehand to save yourself valuable compute time.
+
+### Containers
+Support for containers will be coming soon.
 
 ### Usage: ./start_notebook.sh [-p <string>] [-d <string>] [-A <string>] [time]
   
