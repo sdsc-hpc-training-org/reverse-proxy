@@ -9,9 +9,6 @@
 #SBATCH -o /dev/null
 #SBATCH --wait 0
 
-#echo "PARAM 1: $1"
-#echo "PARAM 2: $2"
-
 # DO NOT EDIT BELOW THIS LINE
 
 API_TOKEN=$1

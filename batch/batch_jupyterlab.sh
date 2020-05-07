@@ -7,14 +7,13 @@
 
 #SBATCH --nodes=1
 #SBATCH --ntasks-per-node=24
-#SBATCH -p compute
 #SBATCH --wait 0
 
 API_TOKEN=$1
 TMPFILE=$3
 # Get the comet node's IP
 IP="$(hostname -s).local"
-jupyter lab --ip $IP --config "$TMPFILE".py | tee $TMPFILE &
+jupyter lab --ip $IP --config "$TMPFILE".py &
 
 # Waits for the notebook to start and gets the port
 PORT=""

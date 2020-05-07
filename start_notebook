@@ -7,10 +7,10 @@ start_dir=""
 runtime="00:30:00"
 project=""
 partition=""
+batch_script=""
 
 # Entry point for starting a notebook. Handles slurm processes and retrives url from slurm output
 function start_notebook () {
-    
     # get the Reversse proxy API_TOKEN
     api_token_response=$(curl -s https://manage.comet-user-content.sdsc.edu/getlink.cgi)
     api_token=${api_token_response#*"Your token is "} #strip the token out of response
@@ -55,14 +55,21 @@ function start_notebook () {
         echo "Using default partition: compute"
         partition="compute"
     fi
+
     if [ "$runtime" = "" ]; then
-        echo "No time allotment given." 
+        echo "No time allotment given. Default is 30 mins" 
     fi
+
+    if [ "$batch_script" = "" ]; then
+        echo "No batch script specified. Using ./batch/batch_notebook.sh"
+        batch_script="batch/batch_notebook.sh"
+    fi
+
     if [ "$project" = "" ]; then
         echo "Using default project"
-        sbatch -t $runtime -p $partition batch_notebook.sh $api_token $tmpfile
+        sbatch -t $runtime -p $partition $batch_script $api_token $tmpfile
     else
-        sbatch -t $runtime -A $project -p $partition batch_notebook.sh $api_token $tmpfile
+        sbatch -t $runtime -A $project -p $partition $batch_script $api_token $tmpfile
     fi
 }
 
@@ -116,7 +123,7 @@ usage() {
 }
 
 OPTIND=1
-while getopts "h?:d:A:" opt; do
+while getopts "h?:d:A:p:b:" opt; do
     case "$opt" in
         h|\?)
             usage 
@@ -125,6 +132,7 @@ while getopts "h?:d:A:" opt; do
         d)  start_dir=$OPTARG ;;
         A)  project=$OPTARG   ;;
         p)  partition=$OPTARG ;;
+        b)  batch_script=$OPTARG ;;
         *)  echo "Error: invalid optional argument $OPTARG" 
             usage 
             exit 1
@@ -132,7 +140,7 @@ while getopts "h?:d:A:" opt; do
     esac
 done
 
-# check for positional argument
+# check for time positional argument
 if [ $(( $# - $OPTIND )) -ge 0 ]; then
     runtime=$(parse_time ${@:$OPTIND:1})
 fi
