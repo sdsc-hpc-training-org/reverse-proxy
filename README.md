@@ -13,6 +13,9 @@ You can install python packages in a conda environment while your notebook is ru
 You'll need to install jupyter using `conda install jupyter`. More info [here](https://anaconda.org/anaconda/jupyter).
 If you want to use jupyterlab, install that.
 
+### Containers
+Support for containers will be coming soon.
+
 ### Usage: ./start_notebook.sh [-p <string>] [-d <string>] [-A <string>] [time]
   
 ```
