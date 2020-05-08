@@ -33,6 +33,10 @@ Default Time is 30 mins
 Start a notebook with all defaults
 `./start_notebook`
 
+![alt text](https://github.com/sdsc-hpc-training-org/reverse-proxy/blob/master/.examples_images/ex1.png?raw=true)
+![alt text](https://github.com/sdsc-hpc-training-org/reverse-proxy/blob/master/.examples_images/ex2.png?raw=true)
+
+
 Start a notebook in the debug queue
 `./start_notebook -d ~ -p debug 30`
 
