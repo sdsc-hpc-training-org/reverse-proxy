@@ -50,6 +50,7 @@ Start a notebook in the compute queue
 `./start_notebook -d ~ -A ddp363 -p compute 60`
 
 ## Arguments
+* [-b <string>] the batch script you want to submit with your notebook. Only those in the `batch` folder are supported.
 * [-p <string>] the partition to wait for. debug or compute
 * [-d <string>] the top-level directory of your jupyter notebook
 * [-A <string>] the project allocation to be used for this notebook
