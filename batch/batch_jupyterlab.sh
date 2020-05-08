@@ -1,10 +1,5 @@
 #!/bin/bash
 
-# Argument 1 should be the Reverse Proxy API token
-# Argument 2 should be the starting directory
-# Argument 3 should be the tmpfile path
-# Argument 4 should be the time allotment
-
 #SBATCH --nodes=1
 #SBATCH --ntasks-per-node=24
 #SBATCH --wait 0
@@ -12,8 +7,7 @@
 API_TOKEN=$1
 TMPFILE=$2
 
-echo "Temp file: $TMPFILE"
-
+# DO NOT EDIT BELOW THIS LINE
 # Get the comet node's IP
 IP="$(hostname -s).local"
 jupyter lab --ip $IP --config "$TMPFILE".py | tee $TMPFILE &
