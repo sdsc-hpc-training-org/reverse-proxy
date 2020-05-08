@@ -33,8 +33,14 @@ Default Time is 30 mins
 Start a notebook with all defaults
 `./start_notebook`
 
+This is your waiting screen. This screen occurs before your batch job is submitted.
 ![alt text](https://github.com/sdsc-hpc-training-org/reverse-proxy/blob/master/.examples_images/ex1.png?raw=true)
+
+Your notebook is ready to go!
 ![alt text](https://github.com/sdsc-hpc-training-org/reverse-proxy/blob/master/.examples_images/ex2.png?raw=true)
+
+If you refresh too soon, you may see this page. This is expected and you'll just have to wait.
+![alt text](https://github.com/sdsc-hpc-training-org/reverse-proxy/blob/master/.examples_images/ex3.png?raw=true)
 
 
 Start a notebook in the debug queue
