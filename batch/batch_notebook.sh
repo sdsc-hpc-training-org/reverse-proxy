@@ -15,7 +15,6 @@ API_TOKEN=$1
 TMPFILE=$2
 # Get the comet node's IP
 IP="$(hostname -s).local"
-#echo "Tempfile: $TMPFILE"
 jupyter notebook --ip $IP --config "$TMPFILE".py | tee $TMPFILE &
 
 # Waits for the notebook to start and gets the port
