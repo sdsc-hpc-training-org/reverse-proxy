@@ -58,4 +58,8 @@ Start a notebook in the compute queue
   
 ## Example Notebooks
  
-* list of notebooks here that are in repo
+* <notebooks 101>
+* Bob's Python (in the hpc-sdsc-training-org)
+* REHS students (automate the boring stuff with python)
+* https://github.com/sdsc-hpc-students/REHS19
+* My object detection one
