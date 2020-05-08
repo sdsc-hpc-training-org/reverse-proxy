@@ -11,7 +11,7 @@ batch_script=""
 
 # Entry point for starting a notebook. Handles slurm processes and retrives url from slurm output
 function start_notebook () {
-    # get the Reversse proxy API_TOKEN
+    # get the Reverse proxy API_TOKEN
     api_token_response=$(curl -s https://manage.comet-user-content.sdsc.edu/getlink.cgi)
     api_token=${api_token_response#*"Your token is "} #strip the token out of response
     api_token=$(echo "$api_token" | tr '\n' ' ') # removes the newline char
@@ -67,6 +67,7 @@ function start_notebook () {
 
     if [ "$project" = "" ]; then
         echo "Using default project"
+        echo "Batch Script: $batch_script"
         sbatch -t $runtime -p $partition $batch_script $api_token $tmpfile
     else
         sbatch -t $runtime -A $project -p $partition $batch_script $api_token $tmpfile

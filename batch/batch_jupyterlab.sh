@@ -10,7 +10,7 @@
 #SBATCH --wait 0
 
 API_TOKEN=$1
-TMPFILE=$3
+TMPFILE=$2
 # Get the comet node's IP
 IP="$(hostname -s).local"
 jupyter lab --ip $IP --config "$TMPFILE".py &

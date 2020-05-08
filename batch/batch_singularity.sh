@@ -1,5 +1,5 @@
 #!/bin/bash
-
+# this script doesn't work yet
 # Argument 1 should be the Reverse Proxy API token
 # Argument 2 should be the tmpfile path
 
@@ -8,9 +8,6 @@
 #SBATCH -p debug
 #SBATCH -o /dev/null
 #SBATCH --wait 0
-
-#echo "PARAM 1: $1"
-#echo "PARAM 2: $2"
 
 # DO NOT EDIT BELOW THIS LINE
 
