@@ -7,6 +7,7 @@
 
 #SBATCH --nodes=1
 #SBATCH --ntasks-per-node=24
+#SBATCH -o /dev/null
 #SBATCH --wait 0
 
 API_TOKEN=$1
