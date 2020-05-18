@@ -33,6 +33,16 @@ Default Time is 30 mins
 Start a notebook with all defaults
 `./start_notebook`
 
+This is your waiting screen. This screen occurs before your batch job is submitted.
+![alt text](https://github.com/sdsc-hpc-training-org/reverse-proxy/blob/master/.examples_images/ex1.png?raw=true)
+
+Your notebook is ready to go!
+![alt text](https://github.com/sdsc-hpc-training-org/reverse-proxy/blob/master/.examples_images/ex2.png?raw=true)
+
+If you refresh too soon, you may see this page. This is expected and you'll just have to wait.
+![alt text](https://github.com/sdsc-hpc-training-org/reverse-proxy/blob/master/.examples_images/ex3.png?raw=true)
+
+
 Start a notebook in the debug queue
 `./start_notebook -d ~ -p debug 30`
 
@@ -40,6 +50,7 @@ Start a notebook in the compute queue
 `./start_notebook -d ~ -A ddp363 -p compute 60`
 
 ## Arguments
+* [-b <string>] the batch script you want to submit with your notebook. Only those in the `batch` folder are supported.
 * [-p <string>] the partition to wait for. debug or compute
 * [-d <string>] the top-level directory of your jupyter notebook
 * [-A <string>] the project allocation to be used for this notebook
@@ -47,4 +58,8 @@ Start a notebook in the compute queue
   
 ## Example Notebooks
  
-* list of notebooks here that are in repo
+* <notebooks 101>
+* Bob's Python (in the hpc-sdsc-training-org)
+* REHS students (automate the boring stuff with python)
+* https://github.com/sdsc-hpc-students/REHS19
+* My object detection one
