@@ -15,22 +15,36 @@ API_TOKEN=$1
 TMPFILE=$2
 # Get the comet node's IP
 IP="$(hostname -s).local"
-jupyter notebook --ip $IP --config "$TMPFILE".py | tee $TMPFILE &
+
+export JUPYTER_RUNTIME_DIR="${TMPFILE}"
+
+jupyter notebook --ip $IP --config "${TMPFILE}/config.py" | tee "${TMPFILE}/output.txt" &
 
 # Waits for the notebook to start and gets the port
 PORT=""
 while [ -z "$PORT" ]
 do
-    PORT=$(grep '1\.' $TMPFILE)
-    PORT=${PORT#*".local:"}
-    PORT=${PORT:0:4}
+    COUNT=`ls -1 ${TMPFILE}/nbserver-*.json 2>/dev/null | wc -l`
+
+    if [ $COUNT -eq "1" ]
+    then
+        PORT=$(grep '"port":' ${TMPFILE}/nbserver-*.json)
+        PORT=${PORT#*": "}
+        PORT=${PORT:0:4}
+    elif [ $COUNT -gt "1" ]
+    then
+        echo "ERROR: found more than one json file in ${JUPYTER_RUNTIME_DIR}"
+        exit 1
+    else
+        sleep 1
+    fi
 done
 
 # redeem the API_TOKEN given the untaken port
 url='"https://manage.comet-user-content.sdsc.edu/redeemtoken.cgi?token=$API_TOKEN&port=$PORT"'
 
 # Redeem the API_TOKEN
-eval curl $url | tee -a $TMPFILE
+eval curl $url | tee -a ${TMPFILE}/output.txt
 
 # waits for all child processes to complete, which means it waits for the jupyter notebook to be terminated
 wait
