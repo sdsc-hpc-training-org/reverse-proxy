@@ -71,13 +71,19 @@ function start_notebook () {
         echo "Project: $project"
         echo "Partition: $partition"
         echo "Tempfile: $tmpfile"
-        sbatch -t $runtime -p $partition $batch_script $api_token $tmpfile
+        echo "Api token: $api_token"
+        echo "Jupyter token: $jupyter_token"
+        echo "runtime: $runtime"
+        #sbatch -t $runtime -p $partition $batch_script $api_token $tmpfile
     else
         echo "Project: $project"
         echo "Partition: $partition"
         echo "Batch script: $batch_script"
         echo "Tempfile: $tmpfile"
-        sbatch -t $runtime -A $project -p $partition $batch_script $api_token $tmpfile
+        echo "Api token: $api_token"
+        echo "Jupyter token $jupyter_token"
+        echo "Runtime: $runtime"
+        #sbatch -t $runtime -A $project -p $partition $batch_script $api_token $tmpfile
     fi
 }
 

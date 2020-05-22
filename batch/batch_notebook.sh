@@ -12,6 +12,7 @@
 
 API_TOKEN=$1
 TMPFILE=$2
+echo "Api_token: $API_TOKEN"
 echo "Tempfile: $TMPFILE"
 # Get the comet node's IP
 IP="$(hostname -s).local"
