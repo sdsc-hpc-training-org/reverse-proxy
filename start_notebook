@@ -35,6 +35,7 @@ function start_notebook () {
     echo "c.NotebookApp.token = '$jupyter_token'" | cat >> "$tmpfile".py
 
     if [ "$start_dir" = "" ]; then
+        echo "Assuming user is $USER"
         echo "c.NotebookApp.notebook_dir = '/home/$USER/'" | cat >> "$tmpfile".py 
     else
         echo "c.NotebookApp.notebook_dir = '$start_dir'" | cat >> "$tmpfile".py
