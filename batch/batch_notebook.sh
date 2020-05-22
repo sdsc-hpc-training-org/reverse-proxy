@@ -6,7 +6,6 @@
 #SBATCH --nodes=1
 #SBATCH --ntasks-per-node=24
 #SBATCH -p debug
-#SBATCH -o /dev/null
 #SBATCH --wait 0
 
 # DO NOT EDIT BELOW THIS LINE
