@@ -2,12 +2,12 @@
 ## ======================================================================
 ## Usage
 ##     ./start_notebook.sh [-p <string>] [-d <string>] [-A <string>] [-b <string>] [-t time]
-## 
+##
 ##       -d: Default Dir is /home/$USER
 ##       -A: Default Allocation is your sbatch default allocation
 ##       -b: Default batch script is ./batch/batch_notebook.sh
 ##       -t: Default time is 30 minutes
-##       
+##
 ## ======================================================================
 
 #SBATCH --nodes=1
@@ -22,6 +22,7 @@ TMPFILE=$2
 echo "Api_token: $API_TOKEN"
 echo "Tempfile: $TMPFILE"
 # Get the comet node's IP
+
 IP="$(hostname -s).local"
 jupyter notebook --ip $IP --config "$TMPFILE".py | tee $TMPFILE &
 
