@@ -9,6 +9,7 @@
 #SBATCH --wait 0
 
 # DO NOT EDIT BELOW THIS LINE
+echo "Tempfile: $TMPFILE"
 
 API_TOKEN=$1
 TMPFILE=$2
