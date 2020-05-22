@@ -124,7 +124,7 @@ usage() {
 }
 
 OPTIND=1
-while getopts "h?:d:A:p:b:" opt; do
+while getopts "h?:d:A:p:b:t:" opt; do
     case "$opt" in
         h|\?)
             usage 
@@ -134,16 +134,12 @@ while getopts "h?:d:A:p:b:" opt; do
         A)  project=$OPTARG   ;;
         p)  partition=$OPTARG ;;
         b)  batch_script=$OPTARG ;;
+        t)  runtime=$(parse_time $OPTARG) ;;
         *)  echo "Error: invalid optional argument $OPTARG" 
             usage 
             exit 1
             ;;
     esac
 done
-
-# check for time positional argument
-if [ $(( $# - $OPTIND )) -ge 0 ]; then
-    runtime=$(parse_time ${@:$OPTIND:1})
-fi
 
 start_notebook $start_dir $runtime $project
