@@ -9,10 +9,10 @@
 #SBATCH --wait 0
 
 # DO NOT EDIT BELOW THIS LINE
-echo "Tempfile: $TMPFILE"
 
 API_TOKEN=$1
 TMPFILE=$2
+echo "Tempfile: $TMPFILE"
 # Get the comet node's IP
 IP="$(hostname -s).local"
 jupyter notebook --ip $IP --config "$TMPFILE".py | tee $TMPFILE &
