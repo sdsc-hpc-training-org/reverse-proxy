@@ -70,6 +70,9 @@ function start_notebook () {
         echo "Batch Script: $batch_script"
         sbatch -t $runtime -p $partition $batch_script $api_token $tmpfile
     else
+        echo "Project: $project"
+        echo "Partition: $partition"
+        echo "Batch script: $batch_script"
         sbatch -t $runtime -A $project -p $partition $batch_script $api_token $tmpfile
     fi
 }
