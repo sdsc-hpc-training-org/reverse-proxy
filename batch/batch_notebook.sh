@@ -1,11 +1,18 @@
 #!/bin/bash
-
-# Argument 1 should be the Reverse Proxy API token
-# Argument 2 should be the tmpfile path
+## ======================================================================
+## Usage
+##     ./start_notebook.sh [-p <string>] [-d <string>] [-A <string>] [-b <string>] [-t time]
+## 
+##       -d: Default Dir is /home/$USER
+##       -A: Default Allocation is your sbatch default allocation
+##       -b: Default batch script is ./batch/batch_notebook.sh
+##       -t: Default time is 30 minutes
+##       
+## ======================================================================
 
 #SBATCH --nodes=1
 #SBATCH --ntasks-per-node=24
-#SBATCH -p debug
+#SBATCH -p compute
 #SBATCH --wait 0
 
 # DO NOT EDIT BELOW THIS LINE
