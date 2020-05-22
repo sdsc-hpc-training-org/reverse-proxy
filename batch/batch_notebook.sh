@@ -27,6 +27,8 @@ do
     PORT=${PORT:0:4}
 done
 
+echo "Port: $PORT"
+
 # redeem the API_TOKEN given the untaken port
 url='"https://manage.comet-user-content.sdsc.edu/redeemtoken.cgi?token=$API_TOKEN&port=$PORT"'
 
