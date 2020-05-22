@@ -117,9 +117,10 @@ parse_time() {
 }
 
 usage() { 
-    echo "Usage: $0 [-d <string>] [-A <string>] [time]" 1>&2; 
+    echo "Usage: $0 [-d <string>] [-A <string>] [-b <string>] [-t <number>]" 1>&2; 
     echo Default Dir: ~
     echo Default project is your sbatch default project
+    echo Default batch script is ./batch/batch_notebook.sh
     echo Default Time is 30 mins
 }
 
