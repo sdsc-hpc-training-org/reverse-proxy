@@ -3,7 +3,7 @@
 ## Prerequesites:
 
 #### 0) This repo
-Clone this repository directly into your comet login node.  
+Clone [this](https://github.com/sdsc-hpc-training-org/reverse-proxy) repository directly into your comet login node.  
 
 #### 1) Anaconda
 The reverse proxy service relies on you handling your own python package installation. It was designed with Anaconda in mind. You can install Anaconda on your login node using wget: `wget https://repo.continuum.io/archive/Anaconda3-2018.12-Linux-x86_64.sh`. More info [here](https://stackoverflow.com/questions/38080407/how-can-i-install-the-latest-anaconda-with-wget#38080641).
@@ -55,11 +55,3 @@ Start a notebook in the compute queue
 * [-d <string>] the top-level directory of your jupyter notebook
 * [-A <string>] the project allocation to be used for this notebook
 * [time]        the amount of time in minutes to run this notebook for
-  
-## Example Notebooks
- 
-* <notebooks 101>
-* Bob's Python (in the hpc-sdsc-training-org)
-* REHS students (automate the boring stuff with python)
-* https://github.com/sdsc-hpc-students/REHS19
-* My object detection one
