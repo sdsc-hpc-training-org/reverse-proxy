@@ -4,23 +4,25 @@
 ## reverse proxy jupyter notebook. This batch script creates the jupyter
 ## notebook on a compute node, while the start notebook script is used to
 ## submit this batch script. You should never submit this batch script on
-## its own, e.g. `sbatch batch_jupyterlab.sh`. Don't do that :). You can
+## its own, e.g. `sbatch batch_notebook.sh`. Don't do that :). You can
 ## specify this particluar batch script by using the -b flag, e.g.
-## ./start_notebook -b batch/batch_jupyterlab.sh
+## ./start_notebook.sh -b batch/batch_jupyterlab.sh
 ## ======================================================================
+
 
 #SBATCH --nodes=1
 #SBATCH --ntasks-per-node=24
-#SBATCH -o /dev/null
+#SBATCH -p compute
 #SBATCH --wait 0
+
+# DO NOT EDIT BELOW THIS LINE
 
 API_TOKEN=$1
 TMPFILE=$2
-
-# DO NOT EDIT BELOW THIS LINE
 # Get the comet node's IP
+
 IP="$(hostname -s).local"
-jupyter lab --ip $IP --config "$TMPFILE".py | tee $TMPFILE &
+jupyter notebook --ip $IP --config "$TMPFILE".py | tee $TMPFILE &
 
 # Waits for the notebook to start and gets the port
 PORT=""
@@ -30,8 +32,6 @@ do
     PORT=${PORT#*".local:"}
     PORT=${PORT:0:4}
 done
-
-echo $PORT | tee -a $TMPFILE
 
 # redeem the API_TOKEN given the untaken port
 url='"https://manage.comet-user-content.sdsc.edu/redeemtoken.cgi?token=$API_TOKEN&port=$PORT"'

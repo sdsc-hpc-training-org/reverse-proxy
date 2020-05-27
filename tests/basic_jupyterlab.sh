@@ -6,7 +6,7 @@
 ## submit this batch script. You should never submit this batch script on
 ## its own, e.g. `sbatch batch_jupyterlab.sh`. Don't do that :). You can
 ## specify this particluar batch script by using the -b flag, e.g.
-## ./start_notebook -b batch/batch_jupyterlab.sh
+## ./start_notebook.sh -b batch/batch_jupyterlab.sh
 ## ======================================================================
 
 #SBATCH --nodes=1

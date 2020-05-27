@@ -1,10 +1,5 @@
 #!/bin/bash
-# this script doesn't work yet
-# Argument 1 should be the Reverse Proxy API token
-# Argument 2 should be the tmpfile path
-
-# This script is a work in progress. It may break if multiple users are
-# on the same node running jupyter notebooks at the same time.
+# This script is a work in progress.
 
 #SBATCH --nodes=1
 #SBATCH --ntasks-per-node=24
