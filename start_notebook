@@ -160,11 +160,12 @@ parse_time() {
 }
 
 usage() { 
-    echo "Usage: $0 [-d <string>] [-A <string>] [-b <string>] [-t <number>]" 1>&2; 
+    echo "Usage: $0 [-p <string>] [-d <string>] [-A <string>] [-b <string>] [-t <number>]" 1>&2; 
+    echo Default Partition: compute
     echo Default Dir: ~
-    echo Default project is your sbatch default project
-    echo Default batch script is ./batch/batch_notebook.sh
-    echo Default Time is 30 mins
+    echo 'Default project: system default project (`show_accounts`)'
+    echo Default batch script: ./batch/batch_notebook.sh
+    echo Default: 30 minutes
 }
 
 input_runtime=""
@@ -190,7 +191,7 @@ while getopts "h?:d:A:p:b:t:" opt; do
     esac
 done
 
-if [ $partition = "debug" ]; then
+if [[ $partition = "debug" ]]; then
     if [ $input_runtime -gt 30 ]; then
         echo "Invalid runtime for debug queue. Must be less than or equal to 30 minutes"
         exit 1
