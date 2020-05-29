@@ -9,6 +9,20 @@
 ## ./start_notebook.sh -b batch/batch_jupyterlab.sh
 ## ======================================================================
 
+## This function takes  one parameter, the PID of the jupyter notebook process
+## The function returns the port which that jupyter notebook is running on.
+function get_jupyter_port() {
+    PID=$1
+    GREP_OUT=""
+    while [ -z $GREP_OUT ]; do
+        GREP_OUT=$(grep -lr $PID /home/$USER/.local/share/jupyter/runtime/)
+    done
+    PORT=$(cat $GREP_OUT | grep "port")
+    PORT=${PORT#*'"port":'}
+    PORT=${PORT:0:5}
+    echo $PORT
+}
+
 
 #SBATCH --nodes=1
 #SBATCH --ntasks-per-node=24
@@ -19,25 +33,20 @@
 
 API_TOKEN=$1
 TMPFILE=$2
-# Get the comet node's IP
 
-IP="$(hostname -s).local"
-jupyter notebook --ip $IP --config "$TMPFILE".py | tee $TMPFILE &
+# Get the comet node's IP (really just the hostname)
+IP="$(hostname -s)"
+jupyter notebook --ip $IP --config "$TMPFILE".py &
 
-# Waits for the notebook to start and gets the port
-PORT=""
-while [ -z "$PORT" ]
-do
-    PORT=$(grep '1\.' $TMPFILE)
-    PORT=${PORT#*".local:"}
-    PORT=${PORT:0:4}
-done
+JUPYTER_PID=$!
+echo "Jupyter PID: $JUPYTER_PID"
+PORT=$(get_jupyter_port $JUPYTER_PID)
 
 # redeem the API_TOKEN given the untaken port
 url='"https://manage.comet-user-content.sdsc.edu/redeemtoken.cgi?token=$API_TOKEN&port=$PORT"'
 
 # Redeem the API_TOKEN
-eval curl $url | tee -a $TMPFILE
+eval curl $url
 
 # waits for all child processes to complete, which means it waits for the jupyter notebook to be terminated
 wait

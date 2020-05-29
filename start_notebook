@@ -33,7 +33,11 @@ project=""
 partition=""
 batch_script=""
 
-# Entry point for starting a notebook. Handles slurm processes and retrives url from slurm output
+# Entry point for starting a notebook. 
+# Submits the a batch job which defines a jupyter notebook
+# Note that behavior is undefined if you configure the script to use
+# a batch script that doesn't work or submits something other than a jupyter
+# notebook. Its not recommended that you change anything in this function.
 function start_notebook () {
 
     # get the Reverse proxy API_TOKEN
@@ -50,7 +54,7 @@ function start_notebook () {
         
     mkdir -p ~/.jupyter_secure
     chmod 777 ~/.jupyter_secure
-    tmpfile=`mktemp -p ~/.jupyter_secure` || exit 1
+    tmpfile=`mktemp -p ~/.jupyter_secure` || (echo "Failed to make the jupyter_secure directory" && exit 1)
 
     # Make a random ssl token
     jupyter_token=$(openssl rand -hex 16)
@@ -93,14 +97,15 @@ function start_notebook () {
 
     if [ "$project" = "" ]; then
         if [[ $DEBUG -eq 1 ]]; then
-            echo "Using default project"
-            echo "Batch Script: $batch_script"
-            echo "Project: $project"
-            echo "Partition: $partition"
-            echo "Tempfile: $tmpfile"
-            echo "Api token: $api_token"
-            echo "Jupyter token: $jupyter_token"
-            echo "runtime: $runtime"
+            touch debug_info.$jupyter_token 
+            cat "Using default project" >> debug_info.$jupyter_token
+            cat "Batch Script: $batch_script"
+            cat "Project: $project"
+            cat "Partition: $partition"
+            cat "Tempfile: $tmpfile"
+            cat "Api token: $api_token"
+            cat "Jupyter token: $jupyter_token"
+            cat "runtime: $runtime"
         fi
         sbatch -t $runtime -p $partition $batch_script $api_token $tmpfile
     else
@@ -192,7 +197,7 @@ while getopts "h?:d:A:p:b:t:" opt; do
 done
 
 if [[ $partition = "debug" ]]; then
-    if [ $input_runtime -gt 30 ]; then
+    if [[ $input_runtime -gt 30 ]]; then
         echo "Invalid runtime for debug queue. Must be less than or equal to 30 minutes"
         exit 1
     fi
