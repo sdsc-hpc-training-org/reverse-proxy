@@ -26,9 +26,9 @@
 ##
 ## =====================================================================================
 
-DEBUG=0
+INFO=0
 start_dir=""
-runtime="00:30:00"
+runtime=""
 project=""
 partition=""
 batch_script=""
@@ -44,7 +44,7 @@ function start_notebook () {
     api_token_response=$(curl -s https://manage.comet-user-content.sdsc.edu/getlink.cgi)
     api_token=${api_token_response#*"Your token is "} #strip the token out of response
     api_token=$(echo "$api_token" | tr '\n' ' ') # removes the newline char
-    api_token=$(echo "$api_token" | xargs) # remove extra spaces before or after
+    export api_token=$(echo "$api_token" | xargs) # remove extra spaces before or after
 
     if [[ $api_token_response == Oops!* ]]
     then
@@ -52,25 +52,25 @@ function start_notebook () {
         exit 1
     fi
         
-    mkdir -p ~/.jupyter_secure
-    chmod 777 ~/.jupyter_secure
-    tmpfile=`mktemp -p ~/.jupyter_secure` || (echo "Failed to make the jupyter_secure directory" && exit 1)
+    JUP_CONFIG_DIR="$(jupyter --config-dir)/rps"
+    mkdir -p $JUP_CONFIG_DIR
+    chmod 0700 $JUP_CONFIG_DIR
+    export config=`mktemp -p $JUP_CONFIG_DIR tmp.XXXXXX.py` || (echo "Failed to make the jupyter_secure directory" && exit 1)
 
     # Make a random ssl token
     jupyter_token=$(openssl rand -hex 16)
 
     # Create the temp config file
-    touch "$tmpfile".py
-    echo "c.NotebookApp.token = '$jupyter_token'" | cat >> "$tmpfile".py
+    echo "c.NotebookApp.token = '$jupyter_token'" | cat >> "$config"
 
     if [ "$start_dir" = "" ]; then
         echo "Assuming user is $USER"
-        echo "c.NotebookApp.notebook_dir = '/home/$USER/'" | cat >> "$tmpfile".py 
+        echo "c.NotebookApp.notebook_dir = '/home/$USER/'" | cat >> "$config"
     else
-        echo "c.NotebookApp.notebook_dir = '$start_dir'" | cat >> "$tmpfile".py
+        echo "c.NotebookApp.notebook_dir = '$start_dir'" | cat >> "$config"
     fi
-    echo "c.NotebookApp.allow_origin = '*'" | cat >> "$tmpfile".py
-    echo "c.NotebookApp.allow_remote_access = True" | cat >> "$tmpfile".py
+    echo "c.NotebookApp.allow_origin = '*'" | cat >> "$config"
+    echo "c.NotebookApp.allow_remote_access = True" | cat >> "$config"
 
     # Give the user the start of their url
     export jupyter_url="https://$api_token.comet-user-content.sdsc.edu?token=$jupyter_token"
@@ -79,7 +79,7 @@ function start_notebook () {
 
     # start the batch script with the api token and the starting directory
     # Argument 1 to the batch script is the RP api token
-    # Argument 2 to the batch script is the tmpfile path
+    # Argument 2 to the batch script is the config path
 
     if [ "$partition" = "" ]; then
         echo "Using default partition: compute"
@@ -88,6 +88,7 @@ function start_notebook () {
 
     if [ "$runtime" = "" ]; then
         echo "No time allotment given. Default is 30 mins" 
+        runtime="00:30:00"
     fi
 
     if [ "$batch_script" = "" ]; then
@@ -95,30 +96,23 @@ function start_notebook () {
         batch_script="./batch/batch_notebook.sh"
     fi
 
+    if [[ $INFO -eq 1 ]]; then
+        echo "******************Start notebook info***********************" 
+        echo "Using default project" 
+        echo "Batch Script: $batch_script"
+        echo "Partition: $partition"
+        echo "Tempfile: $config"
+        echo "Api token: $api_token"
+        echo "Jupyter token: $jupyter_token"
+        echo "Runtime: $runtime"
+        echo "************************************************************"
+    fi
+
+    comment="User,\n$USER,"
     if [ "$project" = "" ]; then
-        if [[ $DEBUG -eq 1 ]]; then
-            touch debug_info.$jupyter_token 
-            cat "Using default project" >> debug_info.$jupyter_token
-            cat "Batch Script: $batch_script"
-            cat "Project: $project"
-            cat "Partition: $partition"
-            cat "Tempfile: $tmpfile"
-            cat "Api token: $api_token"
-            cat "Jupyter token: $jupyter_token"
-            cat "runtime: $runtime"
-        fi
-        sbatch -t $runtime -p $partition $batch_script $api_token $tmpfile
+        sbatch --comment=$comment -t $runtime -p $partition --export=api_token,config $batch_script
     else
-        if [[ $DEBUG -eq 1 ]]; then
-            echo "Project: $project"
-            echo "Partition: $partition"
-            echo "Batch script: $batch_script"
-            echo "Tempfile: $tmpfile"
-            echo "Api token: $api_token"
-            echo "Jupyter token $jupyter_token"
-            echo "Runtime: $runtime"
-        fi
-        sbatch -t $runtime -A $project -p $partition $batch_script $api_token $tmpfile
+        sbatch --comment=$comment -t $runtime -A $project -p $partition --export=api_token,config $batch_script 
     fi
 }
 
@@ -165,18 +159,19 @@ parse_time() {
 }
 
 usage() { 
-    echo "Usage: $0 [-p <string>] [-d <string>] [-A <string>] [-b <string>] [-t <number>]" 1>&2; 
-    echo Default Partition: compute
-    echo Default Dir: ~
-    echo 'Default project: system default project (`show_accounts`)'
-    echo Default batch script: ./batch/batch_notebook.sh
-    echo Default: 30 minutes
+    echo "Usage: $0 [-p <string>] [-d <string>] [-A <string>] [-b <string>] [-t time] [-i]" 1>&2;
+    echo -e "-p: the partition to use, debug or compute. Default is compute" 1>&2;
+    echo -e "-d: the top-level directory of your jupyter notebook. Default is /home/$USER" 1>&2;
+    echo -e "-A: the project allocation to be used for this notebook. Default is system default (also called project or group)" 1>&2;
+    echo -e "-b: the batch script you want to submit. Only those in the batch folder are supported. Default is ./batch/batch_notebook.sh" 1>&2;
+    echo "-t: the time to run the notebook. Default is 30 minutes" 1>&2;
+    echo "-i: Get extra information about the job you submitted using the script" 1>&2;
 }
 
 input_runtime=""
 
 OPTIND=1
-while getopts "h?:d:A:p:b:t:" opt; do
+while getopts "h?:d:A:p:b:t:i" opt; do
     case "$opt" in
         h|\?)
             usage 
@@ -186,7 +181,8 @@ while getopts "h?:d:A:p:b:t:" opt; do
         A)  project=$OPTARG   ;;
         p)  partition=$OPTARG ;;
         b)  batch_script=$OPTARG ;;
-        t)  input_runtime=$OPTARG
+        i)  INFO=1 ;;
+        t)  input_runtime=$OPTARG 
             runtime=$(parse_time $OPTARG) 
             ;;
         *)  echo "Error: invalid optional argument $OPTARG" 
