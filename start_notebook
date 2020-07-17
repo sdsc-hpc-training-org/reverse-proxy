@@ -1,13 +1,13 @@
 #!/bin/bash
 # Authors: James McDougall [Github JamesMcDougallJr], Scott Sakai
-# The goal of this script is to start a jupyter notebook on comet by using the Reverse Proxy service.
+# The goal of this script is to start a jupyter notebook on tscc by using the Reverse Proxy service.
 # This makes a secure connection between the user's local machine and the RP server.
 ## =====================================================================================
 ## Usage
 ##  ./start_notebook [-p <string>] [-d <string>] [-b <string>] [-t <number>]
 ##
-##      -p: The partition your job will be started on. This can be either compute or
-##          debug. Reminder that the debug queue has a max time of 30 minutes.
+##      -p: The partition your job will be started on. This can be either interactive or
+##          osg.
 ##
 ##      -d: The top level directory for your jupyter notebook. 
 ##          Default: /home/$USER 
@@ -40,8 +40,8 @@ batch_script=""
 # notebook. Its not recommended that you change anything in this function.
 function start_notebook () {
 
-    # get the Reverse proxy API_TOKEN
-    api_token_response=$(curl -s https://manage.comet-user-content.sdsc.edu/getlink.cgi)
+    # get the reverse proxy API_TOKEN
+    api_token_response=$(curl -s https://manage.tscc-user-content.sdsc.edu/getlink.cgi)
     api_token=${api_token_response#*"Your token is "} #strip the token out of response
     api_token=$(echo "$api_token" | tr '\n' ' ') # removes the newline char
     export api_token=$(echo "$api_token" | xargs) # remove extra spaces before or after
@@ -52,7 +52,6 @@ function start_notebook () {
         exit 1
     fi
         
-
     if jupyter --config-dir; then
         JUP_CONFIG_DIR="$(jupyter --config-dir)/rps"
     else 
@@ -86,7 +85,7 @@ function start_notebook () {
     echo "c.NotebookApp.allow_remote_access = True" | cat >> "$config"
 
     # Give the user the start of their url
-    export jupyter_url="https://$api_token.comet-user-content.sdsc.edu?token=$jupyter_token"
+    export jupyter_url="https://$api_token.tscc-user-content.sdsc.edu?token=$jupyter_token"
     echo Your notebook is here:
     echo -e "\t$jupyter_url"
 
@@ -95,8 +94,8 @@ function start_notebook () {
     # Argument 2 to the batch script is the config path
 
     if [ "$partition" = "" ]; then
-        echo "Using default partition: compute"
-        partition="compute"
+        echo "Using default partition: interactive"
+        partition="interactive"
     fi
 
     if [ "$runtime" = "" ]; then
@@ -204,12 +203,5 @@ while getopts "h?:d:A:p:b:t:i" opt; do
             ;;
     esac
 done
-
-if [[ $partition = "debug" ]]; then
-    if [[ $input_runtime -gt 30 ]]; then
-        echo "Invalid runtime for debug queue. Must be less than or equal to 30 minutes"
-        exit 1
-    fi
-fi
 
 start_notebook $start_dir $runtime $project

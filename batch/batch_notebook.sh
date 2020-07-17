@@ -35,7 +35,7 @@ function get_jupyter_port() {
 echo "RPS token: $api_token"
 echo "Config path: $config"
 
-# Get the comet node's IP (really just the hostname)
+# Get the tscc node's IP (really just the hostname)
 IP="$(hostname -s).local"
 jupyter notebook --ip $IP --config $config --no-browser &
 
@@ -44,7 +44,7 @@ JUPYTER_PID=$!
 PORT=$(get_jupyter_port $JUPYTER_PID)
 
 # redeem the api_token given the untaken port
-url='"https://manage.comet-user-content.sdsc.edu/redeemtoken.cgi?token=$api_token&port=$PORT"'
+url='"https://manage.tscc-user-content.sdsc.edu/redeemtoken.cgi?token=$api_token&port=$PORT"'
 
 # Redeem the api_token
 eval curl $url
