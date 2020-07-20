@@ -29,6 +29,7 @@ function get_jupyter_port() {
 
 ## Add your own Slurm directives here. They will overwrite any other
 ## arguments you passed into the start_notebook script
+
 #SBATCH --nodes=1
 #SBATCH --ntasks-per-node=24
 #SBATCH --wait 0
@@ -36,18 +37,17 @@ function get_jupyter_port() {
 ## You can add your own modules here.
 module purge
 export MODULEPATH=$MODULEPATH:/share/apps/compute/modulefiles/applications
+
 ## adding spark for the summer institute specifically
 module load spark/2.4.0
 
 
 ## You can use your own conda environment, but make sure it has the jupyter command installed.
-
 echo "Jupyter location before activating shared env: $(which jupyter)"
 
 # Activate the Summer Institute 2019 shared conda environment
 source /share/apps/compute/si2019/miniconda3/etc/profile.d/conda.sh
 conda activate
-
 echo "Jupyter location after activating shared env: $(which jupyter)"
 
 # DO NOT EDIT BELOW THIS LINE
