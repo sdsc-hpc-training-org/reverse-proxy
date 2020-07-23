@@ -9,7 +9,11 @@
 
 The SDSC Reverse Proxy Service is a prototype system that will allow users to launch standard, secure (HTTPS) Jupyter Services on on any Comet compute node using a reverse proxy server using a simple bash script called `start_notebook`. The notebooks will be hosted on the internal cluster network as an HTTP service using standard jupyter commands. The service will then be made available to the user outside of the cluster firewall as an HTTPS connection between the external users web browser and the reverse proxy server. The goal is to minimize software changes for our users while improving the security of user notebooks running on our HPC systems. The RPS service is capable of running on any HPC system capable of supporting the RP server (needs Apache).
 
-Using the RPS is very simple and requires no tunneling and is secure (produces HTTPS URLs). To use RPS, SSH to connect to comet, and make sure that you have the software environment installed on the login node. Verify that you have installed the required software: `Anaconda`,  `conda`, `Jupyter` (notebooks, lab), and other Python packages needed for you application.
+Using the RPS is very simple and requires no tunneling and is secure (produces HTTPS URLs). To use RPS, SSH to connect to comet, and make sure that you have the software environment installed on the login node. Verify that you have installed the required software: 
+* `conda` for installing software packages (https://repo.continuum.io/miniconda/Miniconda3-latest-Linux-x86_64.sh
+* `mininconda` for running the notebook environment https://repo.continuum.io/miniconda/Miniconda3-latest-Linux-x86_64.sh)
+* `Jupyter` (notebooks, lab), and other Python packages needed for you application.
+See the [Software Preqrequisites](https://comet-notebooks-101.readthedocs.io/en/tscc/prerequisites.html) of the [Notebooks 101 tutorial](https://comet-notebooks-101.readthedocs.io/en/tscc/index.html).
 
 ### Clone the RPS repository
 Clone [this](https://github.com/sdsc-hpc-training-org/reverse-proxy) repository directly into your comet login node.  
