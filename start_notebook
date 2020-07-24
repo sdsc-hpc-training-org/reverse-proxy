@@ -41,7 +41,6 @@ batch_script=""
 function start_notebook () {
 
     # get the Reverse proxy API_TOKEN
-    url= STRING
     api_token_response=$(curl -s https://manage.comet-user-content.sdsc.edu/getlink.cgi)
     api_token=${api_token_response#*"Your token is "} #strip the token out of response
     api_token=$(echo "$api_token" | tr '\n' ' ') # removes the newline char
