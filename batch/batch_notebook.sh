@@ -25,15 +25,13 @@ function get_jupyter_port() {
     echo $PORT
 }
 
+## You can add your own slurm directives here, but they will override
+## anything you gave to the start_notebook script like the time, partition, etc
 #SBATCH --nodes=1
 #SBATCH --ntasks-per-node=24
 #SBATCH --wait 0
 
 # DO NOT EDIT BELOW THIS LINE
-
-# These variables are passed into the environment by `start_notebook`
-echo "RPS token: $api_token"
-echo "Config path: $config"
 
 # Get the comet node's IP (really just the hostname)
 IP="$(hostname -s).local"
