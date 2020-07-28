@@ -224,4 +224,9 @@ then
     exit 1
 fi
 
+if [[ $(which jupyter-lab) = "" ]]
+then
+    echo "If you plan to use jupyter lab, be sure to install it with (conda install jupyterlab)"
+fi
+
 start_notebook $start_dir $runtime $project
