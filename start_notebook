@@ -211,19 +211,4 @@ if [[ $partition = "debug" ]]; then
     fi
 fi
 
-if [[ $(which conda 2> /dev/null) = "" ]]
-then
-    echo "Can't find conda. Check out the tutorial: https://comet-notebooks-101.readthedocs.io/en/comet/prerequisites.html"
-fi
-
-if [[ $(which jupyter 2> /dev/null) = "" ]]
-then
-    echo "Can't find jupyter. Make sure to install it with (conda install jupyter)"
-fi
-
-if [[ $(which jupyter-lab 2> /dev/null) = "" ]]
-then
-    echo "If you plan to use jupyter lab, be sure to install it with (conda install jupyterlab)"
-fi
-
 start_notebook $start_dir $runtime $project
