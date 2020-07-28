@@ -1,6 +1,6 @@
 #!/bin/bash
-# Authors: James McDougall [Github JamesMcDougallJr], Scott Sakai
-# The goal of this script is to start a jupyter notebook on comet by using the Reverse Proxy service.
+# Authors: Developed by James McDougall [Github JamesMcDougallJr], Scott Sakai, and Mary Thomas.
+# The goal of this script is to start a jupyter notebook on various HPC Systems by using the Reverse Proxy service.
 # This makes a secure connection between the user's local machine and the RP server.
 ## =====================================================================================
 ## Usage
@@ -52,7 +52,6 @@ function start_notebook () {
         exit 1
     fi
         
-
     if jupyter --config-dir; then
         JUP_CONFIG_DIR="$(jupyter --config-dir)/rps"
     else 
@@ -220,6 +219,11 @@ fi
 if [[ $(which jupyter 2> /dev/null) = "" ]]
 then
     echo "Can't find jupyter. Make sure to install it with (conda install jupyter)"
+fi
+
+if [[ $(which jupyter-lab 2> /dev/null) = "" ]]
+then
+    echo "If you plan to use jupyter lab, be sure to install it with (conda install jupyterlab)"
 fi
 
 start_notebook $start_dir $runtime $project
