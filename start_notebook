@@ -52,7 +52,6 @@ function start_notebook () {
         exit 1
     fi
         
-
     if jupyter --config-dir; then
         JUP_CONFIG_DIR="$(jupyter --config-dir)/rps"
     else 
