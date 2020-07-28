@@ -35,6 +35,13 @@ function get_jupyter_port() {
 
 # Get the comet node's IP (really just the hostname)
 IP="$(hostname -s).local"
+
+# NOTE: You will need to have jupyterlab installed on your system.
+if [[  $(which jupyterlab) = "" ]]
+then
+    echo "Jupyter lab can be installed using 'conda install jupyterlab'"
+fi
+
 jupyter lab --ip $IP --config $config --no-browser &
 
 # the last pid is stored in this variable
