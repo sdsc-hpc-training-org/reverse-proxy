@@ -9,6 +9,14 @@
 ## ./start_notebook.sh -b batch/batch_notebook.sh
 ## ======================================================================
 
+## You can add your own slurm directives here, but they will override
+## anything you gave to the start_notebook script like the time, partition, etc
+#SBATCH --nodes=1
+#SBATCH --ntasks-per-node=24
+#SBATCH --wait 0
+
+# DO NOT EDIT BELOW THIS LINE
+
 ## This function takes  one parameter, the PID of the jupyter notebook process
 ## The function returns the port which that jupyter notebook is running on.
 function get_jupyter_port() {
@@ -24,15 +32,6 @@ function get_jupyter_port() {
     PORT=${PORT:0:5}
     echo $PORT
 }
-
-## You can add your own slurm directives here, but they will override
-## anything you gave to the start_notebook script like the time, partition, etc
-#SBATCH --nodes=1
-#SBATCH --ntasks-per-node=24
-#SBATCH --wait 0
-
-
-# DO NOT EDIT BELOW THIS LINE
 
 # Get the comet node's IP (really just the hostname)
 IP="$(hostname -s).local"
