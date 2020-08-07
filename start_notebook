@@ -1,5 +1,5 @@
 #!/bin/bash
-# Authors: James McDougall [Github JamesMcDougallJr], Scott Sakai
+# Authors: James McDougall [Github JamesMcDougallJr], Scott Sakai, Marty Kandes, and Mary Thomas
 # The goal of this script is to start a jupyter notebook on comet by using the Reverse Proxy service.
 # This makes a secure connection between the user's local machine and the RP server.
 ## =====================================================================================
