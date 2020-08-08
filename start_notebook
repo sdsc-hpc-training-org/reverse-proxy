@@ -1,6 +1,6 @@
 #!/bin/bash
-# Authors: James McDougall [Github JamesMcDougallJr], Scott Sakai
-# The goal of this script is to start a jupyter notebook on comet by using the Reverse Proxy service.
+# Authors: Developed by James McDougall [Github JamesMcDougallJr], Scott Sakai, and Mary Thomas.
+# The goal of this script is to start a jupyter notebook on various HPC Systems by using the Reverse Proxy service.
 # This makes a secure connection between the user's local machine and the RP server.
 ## =====================================================================================
 ## Usage
@@ -52,10 +52,21 @@ function start_notebook () {
         exit 1
     fi
         
-    JUP_CONFIG_DIR="$(jupyter --config-dir)/rps"
-    mkdir -p $JUP_CONFIG_DIR
-    chmod 0700 $JUP_CONFIG_DIR
-    export config=`mktemp -p $JUP_CONFIG_DIR tmp.XXXXXX.py` || (echo "Failed to make the jupyter_secure directory" && exit 1)
+    if jupyter --config-dir; then
+        JUP_CONFIG_DIR="$(jupyter --config-dir)/rps"
+    else 
+        echo "Jupyter command failed. Exit Peacefully."
+        exit 1
+    fi
+
+    mkdir -p $JUP_CONFIG_DIR || (echo "Failed to create directory $JUP_CONFIG_DIR" && exit 1)
+    chmod 0700 $JUP_CONFIG_DIR || (echo "Failed to change permissions on directory $JUP_CONFIG_DIR" && exit 1)
+    export config=`mktemp -p $JUP_CONFIG_DIR tmp.XXXXXX.py` 
+
+    if [[ $config = "" ]]; then
+        echo "Failed to make tempfile in $JUP_CONFIG_DIR"
+        exit 1
+    fi
 
     # Make a random ssl token
     jupyter_token=$(openssl rand -hex 16)
@@ -69,6 +80,7 @@ function start_notebook () {
     else
         echo "c.NotebookApp.notebook_dir = '$start_dir'" | cat >> "$config"
     fi
+
     echo "c.NotebookApp.allow_origin = '*'" | cat >> "$config"
     echo "c.NotebookApp.allow_remote_access = True" | cat >> "$config"
 
