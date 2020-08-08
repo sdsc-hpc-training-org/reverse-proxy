@@ -104,7 +104,7 @@ function start_notebook () {
     echo "c.NotebookApp.allow_remote_access = True" | cat >> "$config"
 
     # Give the user the start of their url
-    export jupyter_url="https://$api_token.comet-user-content.sdsc.edu?token=$jupyter_token"
+    export jupyter_url="https://$api_token.$cluster-user-content.sdsc.edu?token=$jupyter_token"
     echo Your notebook is here:
     echo -e "\t$jupyter_url"
 
@@ -123,8 +123,8 @@ function start_notebook () {
     fi
 
     if [ "$batch_script" = "" ]; then
-        echo "No batch script specified. Using ./batch/batch_notebook.sh"
-        batch_script="./batch/batch_notebook.sh"
+        echo "No batch script specified. Using ./batch/batch_notebook_$cluster.sh"
+        batch_script="./batch/batch_notebook_$cluster.sh"
     fi
 
     if [[ $INFO -eq 1 ]]; then

@@ -81,3 +81,5 @@ Start a notebook in the compute queue in your home directory for 60 minutes:
 
 TODOS:
 Make the script work for both torque and slurm systems
+Make the default notebook script work for both systems - wait 0 seemed to fail on stratus
+Make the script work on stratus with default partion not compute, but interactive
