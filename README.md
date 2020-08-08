@@ -78,3 +78,6 @@ Start a notebook in the debug queue in /share/apps/compute for 30 minutes:
 
 Start a notebook in the compute queue in your home directory for 60 minutes: 
 `./start_notebook -d ~ -p compute -t 60`
+
+TODOS:
+Make the script work for both torque and slurm systems
