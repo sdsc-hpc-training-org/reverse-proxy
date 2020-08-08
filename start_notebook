@@ -40,11 +40,23 @@ batch_script=""
 # notebook. Its not recommended that you change anything in this function.
 function start_notebook () {
 
+    # if the cluster is tscc or tscc-stratus, use tscc-user-content
+    # otherwise use comet-user-content
+    hostname=$(hostname -s)
+    cluster=${hostname%-*}
+    echo "TESTING: CLUSTER: $cluster"
+
     # get the Reverse proxy API_TOKEN
-    api_token_response=$(curl -s https://manage.comet-user-content.sdsc.edu/getlink.cgi)
-    api_token=${api_token_response#*"Your token is "} #strip the token out of response
-    api_token=$(echo "$api_token" | tr '\n' ' ') # removes the newline char
-    export api_token=$(echo "$api_token" | xargs) # remove extra spaces before or after
+    api_token_response=$(curl -s https://manage.$cluster-user-content.sdsc.edu/getlink.cgi)
+
+    # strip the token out of response
+    api_token=${api_token_response#*"Your token is "}     
+
+    # removes the newline char
+    api_token=$(echo "$api_token" | tr '\n' ' ') 
+
+    # remove extra spaces before or after
+    export api_token=$(echo "$api_token" | xargs) 
 
     if [[ $api_token_response == Oops!* ]]
     then
@@ -52,6 +64,8 @@ function start_notebook () {
         exit 1
     fi
         
+    # Should this fail? What if they are using a shared environment?
+    # how can I get access?
     if jupyter --config-dir; then
         JUP_CONFIG_DIR="$(jupyter --config-dir)/rps"
     else 
@@ -59,6 +73,8 @@ function start_notebook () {
         exit 1
     fi
 
+    # ensure the jupyter config directory exists and is accessible.
+    # make a temp file there for the rps to read tokens
     mkdir -p $JUP_CONFIG_DIR || (echo "Failed to create directory $JUP_CONFIG_DIR" && exit 1)
     chmod 0700 $JUP_CONFIG_DIR || (echo "Failed to change permissions on directory $JUP_CONFIG_DIR" && exit 1)
     export config=`mktemp -p $JUP_CONFIG_DIR tmp.XXXXXX.py` 
@@ -110,6 +126,7 @@ function start_notebook () {
 
     if [[ $INFO -eq 1 ]]; then
         echo "******************Start notebook info***********************" 
+        echo "On cluster $cluster"
         echo "Using default project" 
         echo "Batch Script: $batch_script"
         echo "Partition: $partition"
