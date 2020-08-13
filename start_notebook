@@ -113,8 +113,13 @@ function start_notebook () {
     # Argument 2 to the batch script is the config path
 
     if [ "$partition" = "" ]; then
-        echo "Using default partition: compute"
-        partition="compute"
+        if [[ "$cluster" = "comet" ]]
+        then
+            partition="compute"
+        else
+            partition="interactive"
+        fi
+        echo "Using default partition: $partition"
     fi
 
     if [ "$runtime" = "" ]; then
