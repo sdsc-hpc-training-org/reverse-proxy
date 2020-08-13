@@ -103,7 +103,7 @@ function start_notebook () {
     echo "c.NotebookApp.allow_origin = '*'" | cat >> "$config"
     echo "c.NotebookApp.allow_remote_access = True" | cat >> "$config"
 
-    # Give the user the start of their url
+    # Give the user their url
     export jupyter_url="https://$api_token.$cluster-user-content.sdsc.edu?token=$jupyter_token"
     echo Your notebook is here:
     echo -e "\t$jupyter_url"
