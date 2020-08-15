@@ -48,7 +48,7 @@ function start_notebook () {
     echo "TESTING: HOSTNAME: $hostname"
 
     machine=${hostname%-ln*}
-    machine=${hostname%-login*}
+    machine=${machine%-login*}
     echo "TESTING: MACHINE: $machine"
 
     cluster=${machine%-*}
@@ -131,7 +131,7 @@ function start_notebook () {
     fi
 
     if [ "$batch_script" = "" ]; then
-        echo "No batch script specified. Using ./batch/batch_notebook_$cluster.sh"
+        echo "No batch script specified. Using ./batch/$machine/notebook.sh"
         batch_script="./batch/$machine/notebook.sh"
     fi
 
