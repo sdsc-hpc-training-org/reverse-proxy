@@ -48,6 +48,7 @@ function start_notebook () {
     echo "TESTING: HOSTNAME: $hostname"
 
     machine=${hostname%-ln*}
+    machine=${hostname%-login*}
     echo "TESTING: MACHINE: $machine"
 
     cluster=${machine%-*}
@@ -72,7 +73,6 @@ function start_notebook () {
     fi
         
     # Should this fail? What if they are using a shared environment?
-    # how can I get access?
     if jupyter --config-dir; then
         JUP_CONFIG_DIR="$(jupyter --config-dir)/rps"
     else 
@@ -150,7 +150,7 @@ function start_notebook () {
     fi
 
     # if sbatch is available, submit a job using that.
-    if [[ $(which sbatch) != "" ]]
+    if [[ $(which sbatch 2> /dev/null) != "" ]]
     then
         comment="User,\n$USER,"
         if [ "$project" = "" ]; then
