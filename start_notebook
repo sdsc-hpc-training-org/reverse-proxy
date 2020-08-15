@@ -36,7 +36,6 @@ project=""
 partition=""
 batch_script=""
 
-# Entry point for starting a notebook. 
 # Submits the a batch job which defines a jupyter notebook
 # Note that behavior is undefined if you configure the script to use
 # a batch script that doesn't work or submits something other than a jupyter
@@ -46,7 +45,12 @@ function start_notebook () {
     # if the cluster is tscc or tscc-stratus, use tscc-user-content
     # otherwise use comet-user-content
     hostname=$(hostname -s)
-    cluster=${hostname%-*}
+    echo "TESTING: HOSTNAME: $hostname"
+
+    machine=${hostname%-ln*}
+    echo "TESTING: MACHINE: $machine"
+
+    cluster=${machine%-*}
     echo "TESTING: CLUSTER: $cluster"
 
     # get the Reverse proxy API_TOKEN
@@ -94,7 +98,6 @@ function start_notebook () {
     echo "c.NotebookApp.token = '$jupyter_token'" | cat >> "$config"
 
     if [ "$start_dir" = "" ]; then
-        echo "Assuming user is $USER"
         echo "c.NotebookApp.notebook_dir = '/home/$USER/'" | cat >> "$config"
     else
         echo "c.NotebookApp.notebook_dir = '$start_dir'" | cat >> "$config"
@@ -129,11 +132,12 @@ function start_notebook () {
 
     if [ "$batch_script" = "" ]; then
         echo "No batch script specified. Using ./batch/batch_notebook_$cluster.sh"
-        batch_script="./batch/batch_notebook_$cluster.sh"
+        batch_script="./batch/$machine/notebook.sh"
     fi
 
     if [[ $INFO -eq 1 ]]; then
-        echo "******************Start notebook info***********************" 
+        echo "******************Start notebook info**********************" 
+        echo "User $USER"
         echo "On cluster $cluster"
         echo "Using default project" 
         echo "Batch Script: $batch_script"
@@ -142,7 +146,7 @@ function start_notebook () {
         echo "Api token: $api_token"
         echo "Jupyter token: $jupyter_token"
         echo "Runtime: $runtime"
-        echo "************************************************************"
+        echo "***********************************************************"
     fi
 
     # if sbatch is available, submit a job using that.
