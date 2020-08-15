@@ -45,14 +45,8 @@ function start_notebook () {
     # if the cluster is tscc or tscc-stratus, use tscc-user-content
     # otherwise use comet-user-content
     hostname=$(hostname -s)
-    echo "TESTING: HOSTNAME: $hostname"
-
-    machine=${hostname%-ln*}
-    machine=${machine%-login*}
-    echo "TESTING: MACHINE: $machine"
-
-    cluster=${machine%-*}
-    echo "TESTING: CLUSTER: $cluster"
+    export cluster=${hostname%-*}
+    echo "cluster: $cluster"
 
     # get the Reverse proxy API_TOKEN
     api_token_response=$(curl -s https://manage.$cluster-user-content.sdsc.edu/getlink.cgi)
@@ -130,11 +124,7 @@ function start_notebook () {
         runtime="00:30:00"
     fi
 
-    if [ "$batch_script" = "" ]; then
-        echo "No batch script specified. Using ./batch/$machine/notebook.sh"
-        batch_script="./batch/$machine/notebook.sh"
-    fi
-
+    
     if [[ $INFO -eq 1 ]]; then
         echo "******************Start notebook info**********************" 
         echo "User $USER"
@@ -152,14 +142,22 @@ function start_notebook () {
     # if sbatch is available, submit a job using that.
     if [[ $(which sbatch 2> /dev/null) != "" ]]
     then
+	if [ "$batch_script" = "" ]; then
+	    echo "No batch script specified. Using ./sbatch/notebook.sh"
+	    batch_script="./sbatch/notebook.sh"
+	fi
         comment="User,\n$USER,"
         if [ "$project" = "" ]; then
-            sbatch --comment=$comment -t $runtime -p $partition --export=api_token,config $batch_script
+            sbatch --comment=$comment -t $runtime -p $partition --export=api_token,config,cluster $batch_script
         else
-            sbatch --comment=$comment -t $runtime -A $project -p $partition --export=api_token,config $batch_script 
+            sbatch --comment=$comment -t $runtime -A $project -p $partition --export=api_token,config,cluster $batch_script 
         fi
     else
         echo "Sbatch is currently the the only queuing system supported."
+	if [ "$batch_script" = "" ]; then
+	    echo "No batch script specified. Using ./torque/notebook.sh"
+	    batch_script="./torque/notebook.sh"
+	fi
     fi
 }
 

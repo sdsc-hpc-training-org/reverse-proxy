@@ -13,6 +13,7 @@
 ## anything you gave to the start_notebook script like the time, partition, etc
 #SBATCH --nodes=1
 #SBATCH --ntasks-per-node=24
+#SBATCH --wait 0
 
 # DO NOT EDIT BELOW THIS LINE
 
@@ -34,14 +35,21 @@ function get_jupyter_port() {
 
 # Get the comet node's IP (really just the hostname)
 IP="$(hostname -s).local"
-jupyter notebook --ip $IP --config $config --no-browser &
+
+# NOTE: You will need to have jupyterlab installed on your system.
+if [[  $(which jupyterlab 2> /dev/null) = "" ]]
+then
+    echo "Jupyter lab can be installed using 'conda install jupyterlab'"
+fi
+
+jupyter lab --ip $IP --config $config --no-browser &
 
 # the last pid is stored in this variable
 JUPYTER_PID=$!
 PORT=$(get_jupyter_port $JUPYTER_PID)
 
 # redeem the api_token given the untaken port
-url='"https://manage.tscc-user-content.sdsc.edu/redeemtoken.cgi?token=$api_token&port=$PORT"'
+url='"https://manage.$cluster-user-content.sdsc.edu/redeemtoken.cgi?token=$api_token&port=$PORT"'
 
 # Redeem the api_token
 eval curl $url

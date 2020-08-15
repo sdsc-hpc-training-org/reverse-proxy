@@ -13,7 +13,6 @@
 ## anything you gave to the start_notebook script like the time, partition, etc
 #SBATCH --nodes=1
 #SBATCH --ntasks-per-node=24
-#SBATCH --wait 0
 
 # DO NOT EDIT BELOW THIS LINE
 
@@ -42,7 +41,8 @@ JUPYTER_PID=$!
 PORT=$(get_jupyter_port $JUPYTER_PID)
 
 # redeem the api_token given the untaken port
-url='"https://manage.comet-user-content.sdsc.edu/redeemtoken.cgi?token=$api_token&port=$PORT"'
+echo "cluster $cluster"
+url='"https://manage.$cluster-user-content.sdsc.edu/redeemtoken.cgi?token=$api_token&port=$PORT"'
 
 # Redeem the api_token
 eval curl $url
