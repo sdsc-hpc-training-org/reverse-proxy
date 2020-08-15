@@ -9,6 +9,13 @@
 ## ./start_notebook.sh -b batch/batch_notebook.sh
 ## ======================================================================
 
+## You can add your own slurm directives here, but they will override
+## anything you gave to the start_notebook script like the time, partition, etc
+#SBATCH --nodes=1
+#SBATCH --ntasks-per-node=24
+
+# DO NOT EDIT BELOW THIS LINE
+
 ## This function takes  one parameter, the PID of the jupyter notebook process
 ## The function returns the port which that jupyter notebook is running on.
 function get_jupyter_port() {
@@ -25,16 +32,6 @@ function get_jupyter_port() {
     echo $PORT
 }
 
-#SBATCH --nodes=1
-#SBATCH --ntasks-per-node=24
-#SBATCH --wait 0
-
-# DO NOT EDIT BELOW THIS LINE
-
-# These variables are passed into the environment by `start_notebook`
-echo "RPS token: $api_token"
-echo "Config path: $config"
-
 # Get the comet node's IP (really just the hostname)
 IP="$(hostname -s).local"
 jupyter notebook --ip $IP --config $config --no-browser &
@@ -44,7 +41,7 @@ JUPYTER_PID=$!
 PORT=$(get_jupyter_port $JUPYTER_PID)
 
 # redeem the api_token given the untaken port
-url='"https://manage.comet-user-content.sdsc.edu/redeemtoken.cgi?token=$api_token&port=$PORT"'
+url='"https://manage.tscc-user-content.sdsc.edu/redeemtoken.cgi?token=$api_token&port=$PORT"'
 
 # Redeem the api_token
 eval curl $url
