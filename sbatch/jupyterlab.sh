@@ -13,7 +13,6 @@
 ## anything you gave to the start_notebook script like the time, partition, etc
 #SBATCH --nodes=1
 #SBATCH --ntasks-per-node=24
-#SBATCH --wait 0
 
 # DO NOT EDIT BELOW THIS LINE
 
