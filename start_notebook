@@ -140,10 +140,11 @@ function start_notebook () {
     # if sbatch is available, submit a job using that.
     if [[ $(which sbatch 2> /dev/null) != "" ]]
     then
-	if [ "$batch_script" = "" ]; then
-	    echo "No batch script specified. Using ./sbatch/notebook.sh"
-	    batch_script="./sbatch/notebook.sh"
-	fi
+        if [ "$batch_script" = "" ]; then
+            echo "No batch script specified. Using ./slurm/notebook.sh"
+            batch_script="./slurm/notebook.sh"
+        fi
+
         comment="User,\n$USER,"
         if [ "$project" = "" ]; then
             sbatch --comment=$comment -t $runtime -p $partition --export=api_token,config,cluster $batch_script
@@ -152,10 +153,10 @@ function start_notebook () {
         fi
     else
         echo "Sbatch is currently the the only queuing system supported."
-	if [ "$batch_script" = "" ]; then
-	    echo "No batch script specified. Using ./torque/notebook.sh"
-	    batch_script="./torque/notebook.sh"
-	fi
+        if [ "$batch_script" = "" ]; then
+            echo "No batch script specified. Using ./torque/notebook.sh"
+            batch_script="./torque/notebook.sh"
+        fi
     fi
 }
 
