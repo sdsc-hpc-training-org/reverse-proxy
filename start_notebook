@@ -171,9 +171,9 @@ function start_notebook () {
         fi
         if [[ $project = "" ]]
         then
-            qsub $batch_script
+            qsub -l walltime=$runtime $batch_script
         else
-            qsub -A $project $batch_script
+            qsub -l walltime=$runtime -A $project $batch_script
         fi
     fi
 }
