@@ -32,9 +32,16 @@
 INFO=0
 start_dir=""
 runtime=""
+# which account to charge the compute time to
 project=""
+# compute or debug on comet
 partition=""
+# path to the batch script to submit
 batch_script=""
+# the runtime the user gives
+input_runtime=""
+# used for GETOPTS
+OPTIND=1
 
 # Submits the a batch job which defines a jupyter notebook
 # Note that behavior is undefined if you configure the script to use
@@ -137,6 +144,8 @@ function start_notebook () {
         echo "***********************************************************"
     fi
 
+    export start_root=$PWD
+
     # if sbatch is available, submit a job using that.
     if [[ $(which sbatch 2> /dev/null) != "" ]]
     then
@@ -147,58 +156,21 @@ function start_notebook () {
 
         comment="User,\n$USER,"
         if [ "$project" = "" ]; then
-            sbatch --comment=$comment -t $runtime -p $partition --export=api_token,config,cluster $batch_script
+            sbatch --comment=$comment -t $runtime -p $partition --export=api_token,config,cluster,start_root $batch_script
         else
-            sbatch --comment=$comment -t $runtime -A $project -p $partition --export=api_token,config,cluster $batch_script 
+            sbatch --comment=$comment -t $runtime -A $project -p $partition --export=api_token,config,cluster,start_root $batch_script 
         fi
     else
-        echo "Sbatch is currently the the only queuing system supported."
         if [ "$batch_script" = "" ]; then
             echo "No batch script specified. Using ./torque/notebook.sh"
             batch_script="./torque/notebook.sh"
         fi
-    fi
-}
-
-# Arg 1 is the time to parse
-# any other args are invalid and will be ignored
-parse_time() {
-    IFS=':' read -ra TIME <<< "$1"
-    IFS=' '
-    if [ ${#TIME[*]} -ne 3 ]
-    then
-        if [ ${#TIME[*]} = 1 ]
+        if [[ $project = "" ]]
         then
-            if [ ${TIME[0]} -ge 60 ]
-            then
-                # then divide it up into hours, minutes, etc
-                hrs=$(( ${TIME[0]}/60 ))
-                min=$(( ${TIME[0]}%60 ))
-                hrsiz=${#hrs}
-                minsiz=${#min}
-                if [ $hrsiz -lt 2 ]; then
-                    hrs="0$hrs"
-                fi
-                if [ $minsiz -lt 2 ]; then
-                    min="0$min"
-                fi
-                echo "$hrs:$min:00"
-                return 0
-            elif [ ${TIME} -le 0 ]
-            then
-                echo "Error: Negative Time Invalid"
-                exit 1
-            else
-                echo "00:${TIME[0]}:00"
-                return 0
-            fi
+            qsub $batch_script
         else
-            echo "Error: Invalid time format"
-            exit 1
+            qsub -A $project $batch_script
         fi
-    else
-        echo $1
-        return 1
     fi
 }
 
@@ -212,9 +184,8 @@ usage() {
     echo "-i: Get extra information about the job you submitted using the script" 1>&2;
 }
 
-input_runtime=""
+source lib/parse_time.sh
 
-OPTIND=1
 while getopts "h?:d:A:p:b:t:i" opt; do
     case "$opt" in
         h|\?)
