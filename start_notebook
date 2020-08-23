@@ -153,19 +153,23 @@ function start_notebook () {
     # if sbatch is available, submit a job using that.
     if [[ $(which sbatch 2> /dev/null) != "" ]]
     then
-        if [ "$batch_script" = "" ]; then
+        if [ "$batch_script" = "" ]
+        then
             echo "No batch script specified. Using ./slurm/notebook.sh"
             batch_script="./slurm/notebook.sh"
         fi
 
         comment="User,\n$USER,"
-        if [ "$project" = "" ]; then
+        if [ "$project" = "" ]
+        then
             sbatch --comment=$comment -t $runtime -p $partition --export=api_token,config,cluster,start_root $batch_script
         else
             sbatch --comment=$comment -t $runtime -A $project -p $partition --export=api_token,config,cluster,start_root $batch_script 
         fi
     elif [[ $(which qsub 2> /dev/null) != "" ]]
-        if [ "$batch_script" = "" ]; then
+    then
+        if [ "$batch_script" = "" ]
+        then
             echo "No batch script specified. Using ./torque/notebook.sh"
             batch_script="./torque/notebook.sh"
         fi
