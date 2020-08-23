@@ -30,6 +30,7 @@
 ## =====================================================================================
 
 INFO=0
+
 start_dir=""
 runtime=""
 # which account to charge the compute time to
@@ -40,6 +41,8 @@ partition=""
 batch_script=""
 # the runtime the user gives
 input_runtime=""
+# environment variable. default is a singularity container
+environment=""
 # used for GETOPTS
 OPTIND=1
 
@@ -71,12 +74,13 @@ function start_notebook () {
         echo $api_token_response
         exit 1
     fi
-        
-    # Should this fail? What if they are using a shared environment?
+
     if jupyter --config-dir; then
         JUP_CONFIG_DIR="$(jupyter --config-dir)/rps"
     else 
-        echo "Jupyter command failed. Exit Peacefully."
+	echo "It looks like you don't have jupyter installed on your account."
+	echo "To learn how to install Miniconda, check out this link: https://comet-notebooks-101.readthedocs.io/en/comet/prerequisites.html"
+	exit 0
     fi
 
     # ensure the jupyter config directory exists and is accessible.
@@ -186,7 +190,7 @@ usage() {
 
 source lib/parse_time.sh
 
-while getopts "h?:d:A:p:b:t:i" opt; do
+while getopts "h?:d:A:p:b:t:i:e" opt; do
     case "$opt" in
         h|\?)
             usage 
