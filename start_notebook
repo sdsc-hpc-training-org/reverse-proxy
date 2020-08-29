@@ -30,20 +30,13 @@
 ## =====================================================================================
 
 INFO=0
-
 start_dir=""
 runtime=""
-# which account to charge the compute time to
 project=""
-# compute or debug on comet
 partition=""
-# path to the batch script to submit
-batch_script=""
-# the runtime the user gives
+script=""
 input_runtime=""
-# environment variable. default is a singularity container
 environment=""
-# used for GETOPTS
 OPTIND=1
 
 # Submits the a batch job which defines a jupyter notebook
@@ -54,29 +47,19 @@ function start_notebook () {
 
     # if the cluster is tscc or tscc-stratus, use tscc-user-content
     # otherwise use comet-user-content
-    hostname=$(hostname -s)
-    export cluster=${hostname%-*}
+    hostname=$(hostname -s) && export cluster=${hostname%-*}
 
     # get the Reverse proxy API_TOKEN
-    api_token_response=$(curl -s https://manage.$cluster-user-content.sdsc.edu/getlink.cgi)
+    api_response=$(curl -s https://manage.$cluster-user-content.sdsc.edu/getlink.cgi) 
+    [[ $api_response == Oops!* ]] && echo $api_response && exit 1
 
-    # strip the token out of response
-    api_token=${api_token_response#*"Your token is "}     
-
+    export api_token=$(echo $api_response | awk 'NF>1{printf $NF}' -)
     # removes the newline char
-    api_token=$(echo "$api_token" | tr '\n' ' ') 
+    #api_token=$(echo "$api_token" | tr '\n' ' ') 
 
     # remove extra spaces before or after
-    export api_token=$(echo "$api_token" | xargs) 
-
-    if [[ $api_token_response == Oops!* ]]
-    then
-        echo $api_token_response
-        exit 1
-    fi
-
     if jupyter --config-dir; then
-        JUP_CONFIG_DIR="$(jupyter --config-dir)/rps"
+        jup_conf_dir="$(jupyter --config-dir)/rps"
     else 
         echo "It looks like you don't have jupyter installed on your account."
         echo "To learn how to install Miniconda, check out this link: https://comet-notebooks-101.readthedocs.io/en/comet/prerequisites.html"
@@ -85,27 +68,18 @@ function start_notebook () {
 
     # ensure the jupyter config directory exists and is accessible.
     # make a temp file there for the rps to read tokens
-    mkdir -p $JUP_CONFIG_DIR || (echo "Failed to create directory $JUP_CONFIG_DIR" && exit 1)
-    chmod 0700 $JUP_CONFIG_DIR || (echo "Failed to change permissions on directory $JUP_CONFIG_DIR" && exit 1)
-    export config=`mktemp -p $JUP_CONFIG_DIR tmp.XXXXXX.py` 
+    mkdir -p $jup_conf_dir || (echo "Failed to create directory $jup_conf_dir" && exit 1)
+    chmod 0700 $jup_conf_dir || (echo "Failed to change permissions on directory $jup_conf_dir" && exit 1)
+    export config=`mktemp -p $jup_conf_dir tmp.XXXXXX.py` 
 
-    if [[ $config = "" ]]; then
-        echo "Failed to make tempfile in $JUP_CONFIG_DIR"
-        exit 1
-    fi
+    [[ $config = "" ]] && echo "Failed to make tempfile in $jup_conf_dir" && exit 1
 
     # Make a random ssl token
     jupyter_token=$(openssl rand -hex 16)
 
     # Create the temp config file
     echo "c.NotebookApp.token = '$jupyter_token'" | cat >> "$config"
-
-    if [ "$start_dir" = "" ]; then
-        echo "c.NotebookApp.notebook_dir = '/home/$USER/'" | cat >> "$config"
-    else
-        echo "c.NotebookApp.notebook_dir = '$start_dir'" | cat >> "$config"
-    fi
-
+    [[ $start_dir = "" ]] && start_dir=/home/$USER/ && echo "c.NotebookApp.notebook_dir = '$start_dir'" | cat >> "$config"
     echo "c.NotebookApp.allow_origin = '*'" | cat >> "$config"
     echo "c.NotebookApp.allow_remote_access = True" | cat >> "$config"
 
@@ -118,28 +92,18 @@ function start_notebook () {
     # Argument 1 to the batch script is the RP api token
     # Argument 2 to the batch script is the config path
 
-    if [ "$partition" = "" ]; then
-        if [[ "$cluster" = "comet" ]]
-        then
-            partition="compute"
-        else
-            partition="interactive"
-        fi
-        echo "Using default partition: $partition"
+    if [[ $partition = "" ]]; then
+        [[ $cluster = "comet" ]] && partition="compute" || partition="interactive" && echo "Using default partition: $partition"
     fi
 
-    if [ "$runtime" = "" ]; then
-        echo "No time allotment given. Default is 30 mins" 
-        runtime="00:30:00"
-    fi
-
+     [[ $runtime = "" ]] && echo "No time allotment given. Default is 30 mins" && runtime="-t 00:30:00"
     
     if [[ $INFO -eq 1 ]]; then
         echo "******************Start notebook info**********************" 
         echo "User $USER"
         echo "On cluster $cluster"
         echo "Using default project" 
-        echo "Batch Script: $batch_script"
+        echo "Batch Script: $script"
         echo "Partition: $partition"
         echo "Tempfile: $config"
         echo "Api token: $api_token"
@@ -149,36 +113,16 @@ function start_notebook () {
     fi
 
     export start_root=$PWD
-
+    [[ $project = "" ]] || project="-A $project"
     # if sbatch is available, submit a job using that.
-    if [[ $(which sbatch 2> /dev/null) != "" ]]
-    then
-        if [ "$batch_script" = "" ]
-        then
-            echo "No batch script specified. Using ./slurm/notebook.sh"
-            batch_script="./slurm/notebook.sh"
-        fi
-
+    if [[ $(which sbatch 2> /dev/null) != "" ]]; then
+        echo "script: $script"
+        [[ "$script" = "" ]] && echo "Using ./slurm/notebook.sh" && script="./slurm/notebook.sh"
         comment="User,\n$USER,"
-        if [ "$project" = "" ]
-        then
-            sbatch --comment=$comment -t $runtime -p $partition --export=api_token,config,cluster,start_root $batch_script
-        else
-            sbatch --comment=$comment -t $runtime -A $project -p $partition --export=api_token,config,cluster,start_root $batch_script 
-        fi
-    elif [[ $(which qsub 2> /dev/null) != "" ]]
-    then
-        if [ "$batch_script" = "" ]
-        then
-            echo "No batch script specified. Using ./torque/notebook.sh"
-            batch_script="./torque/notebook.sh"
-        fi
-        if [[ $project = "" ]]
-        then
-            qsub -l walltime=$runtime $batch_script
-        else
-            qsub -l walltime=$runtime -A $project $batch_script
-        fi
+        sbatch --comment=$comment $runtime $project -p $partition --export=api_token,config,cluster,start_root $script
+    elif [[ $(which qsub 2> /dev/null) != "" ]]; then
+        [[ $script = "" ]] && echo "Using ./torque/notebook.sh" && script="./torque/notebook.sh"
+        qsub -l walltime=$runtime $project $batch_script
     else
         echo "No queue system was found. Please use slurm or torque"
     fi
@@ -205,7 +149,7 @@ while getopts "h?:d:A:p:b:t:i:e" opt; do
         d)  start_dir=$OPTARG ;;
         A)  project=$OPTARG   ;;
         p)  partition=$OPTARG ;;
-        b)  batch_script=$OPTARG ;;
+        b)  script=$OPTARG ;;
         i)  INFO=1 ;;
         t)  input_runtime=$OPTARG 
             runtime=$(parse_time $OPTARG) 
@@ -224,4 +168,4 @@ if [[ $partition = "debug" ]]; then
     fi
 fi
 
-start_notebook $start_dir $runtime $project
+start_notebook

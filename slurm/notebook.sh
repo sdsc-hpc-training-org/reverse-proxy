@@ -27,6 +27,7 @@ PORT=$(get_jupyter_port $JUPYTER_PID)
 
 # redeem the api_token given the untaken port
 echo "cluster $cluster"
+echo "api_token $api_token"
 url='"https://manage.$cluster-user-content.sdsc.edu/redeemtoken.cgi?token=$api_token&port=$PORT"'
 
 # Redeem the api_token
