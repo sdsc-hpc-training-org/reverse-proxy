@@ -122,7 +122,10 @@ function start_notebook () {
         sbatch --comment=$comment $runtime $project -p $partition --export=api_token,config,cluster,start_root $script
     elif [[ $(which qsub 2> /dev/null) != "" ]]; then
         [[ $script = "" ]] && echo "Using ./torque/notebook.sh" && script="./torque/notebook.sh"
-        qsub -l walltime=$runtime $project $batch_script
+	echo "runtime: ${runtime#-t **}"
+	echo "project: $project"
+	echo "script: $script"
+        qsub -l walltime=${runtime#-t **} $project $script
     else
         echo "No queue system was found. Please use slurm or torque"
     fi
