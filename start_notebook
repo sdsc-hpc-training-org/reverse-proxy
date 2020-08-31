@@ -62,7 +62,7 @@ function start_notebook () {
         jup_conf_dir="$(jupyter --config-dir)/rps"
     else 
         echo "It looks like you don't have jupyter installed on your account."
-        echo "To learn how to install Miniconda, check out this link: https://comet-notebooks-101.readthedocs.io/en/comet/prerequisites.html"
+        echo "To learn how to install Jupyter using Miniconda, check out this link: https://comet-notebooks-101.readthedocs.io/en/comet/prerequisites.html"
         exit 0
     fi
 
