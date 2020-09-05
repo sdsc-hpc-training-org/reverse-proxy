@@ -15,6 +15,7 @@
 #SBATCH --ntasks-per-node=24
 
 # DO NOT EDIT BELOW THIS LINE
+echo $start_root $config $cluster $api_token
 source $start_root/lib/get_jupyter_port.sh
 
 # Get the comet node's IP (really just the hostname)

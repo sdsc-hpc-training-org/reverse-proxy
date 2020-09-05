@@ -119,7 +119,7 @@ function start_notebook () {
         echo "script: $script"
         [[ "$script" = "" ]] && echo "Using ./slurm/notebook.sh" && script="./slurm/notebook.sh"
         comment="User,\n$USER,"
-        sbatch --comment=$comment $runtime $project -p $partition --export=api_token,config,cluster,start_root $script
+        sbatch --comment=$comment $runtime $project -p $partition $script
     elif [[ $(which qsub 2> /dev/null) != "" ]]; then
         [[ $script = "" ]] && echo "Using ./torque/notebook.sh" && script="./torque/notebook.sh"
 	echo "runtime: ${runtime#-t **}"
