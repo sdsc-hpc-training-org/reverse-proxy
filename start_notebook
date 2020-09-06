@@ -55,7 +55,6 @@ function start_notebook () {
 
     export api_token=$(echo $api_response | awk 'NF>1{printf $NF}' -)
     # removes the newline char
-    #api_token=$(echo "$api_token" | tr '\n' ' ') 
 
     # remove extra spaces before or after
     if jupyter --config-dir; then
