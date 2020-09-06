@@ -87,7 +87,9 @@ function start_jupyterlab () {
 if [[ ! $srch_res =~ $juplab_matchstr ]]
 then
         echo "$juplab_matchstr  NOT  FOUND in $srch_res"
-        exit 1
+        echo "It looks like you don't have jupyter-lab installed on your account."
+        echo "To learn how to install JupyterLab using Miniconda, check out this link: https://comet-notebooks-101.readthedocs.io/en/comet/prerequisites.html"
+        exit 0 
     else 
         echo "$juplab_matchstr  FOUND in $srch_res"
     fi
