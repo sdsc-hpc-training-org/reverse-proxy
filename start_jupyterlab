@@ -81,16 +81,18 @@ function start_jupyterlab () {
     ### Check to see if  jupyter-labextension has been installed
     #test for path: miniconda3/bin/jupyter-labextension
     juplab_matchstr="miniconda3/bin/jupyter-labextension"
-    srch_res=$(which jupyter-labextension)
     echo "debug:  juplab_matchstr:  $juplab_matchstr"
+    srch_res=$(which jupyter-labextension)
     echo "debug:  srch_res:  $srch_res"
-    #if fullstring.find(substring) != -1:
+if [[ ! $srch_res =~ $juplab_matchstr ]]
+then
+        echo "$juplab_matchstr  NOT  FOUND in $srch_res"
     #if srch_res.findstring(juplab_matchstr) !- -1:
-    #    #print "Found!"
-    #    echo "$srch_res FOUND in $juplab_matchstr"
-    #else 
-    #    echo "$srch_res NOT in $juplab_matchstr"
-    #fi
+        #print "Found!"
+#        echo "debug:  $juplab_matchstri FOUND in $srch_res"
+    else 
+        echo "$juplab_matchstr  FOUND in $srch_res"
+    fi
     exit
 
     # Make a random ssl token
