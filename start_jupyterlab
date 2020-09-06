@@ -87,13 +87,10 @@ function start_jupyterlab () {
 if [[ ! $srch_res =~ $juplab_matchstr ]]
 then
         echo "$juplab_matchstr  NOT  FOUND in $srch_res"
-    #if srch_res.findstring(juplab_matchstr) !- -1:
-        #print "Found!"
-#        echo "debug:  $juplab_matchstri FOUND in $srch_res"
+        exit 1
     else 
         echo "$juplab_matchstr  FOUND in $srch_res"
     fi
-    exit
 
     # Make a random ssl token
     jupyter_token=$(openssl rand -hex 16)
