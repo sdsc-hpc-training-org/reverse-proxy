@@ -87,10 +87,9 @@ function start_jupyterlab () {
     srch_res=$(conda list | grep "jupyterlab" )
     echo "debug:  juplab_matchstr:  $juplab_matchstr"
     echo "debug:  srch_res:  $srch_res"
-echo "debug:  Conda List:  [[[   $srch_res   ]]]"
 
-if [[ ! $srch_res =~ $juplab_matchstr ]]
-then
+    if [[ ! $srch_res =~ $juplab_matchstr ]]
+    then
         #echo "$juplab_matchstr  NOT  FOUND in $srch_res"
         echo "$juplab_matchstr  NOT  FOUND in $cndcmd "
         echo "It looks like you don't have jupyter-lab installed on your account."
@@ -99,7 +98,6 @@ then
     else 
         echo "$juplab_matchstr FOUND in $cndcmd "
     fi
-exit
 
     # Make a random ssl token
     jupyter_token=$(openssl rand -hex 16)
