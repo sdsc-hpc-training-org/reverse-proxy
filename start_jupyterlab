@@ -78,21 +78,29 @@ function start_jupyterlab () {
 
     [[ $config = "" ]] && echo "Failed to make tempfile in $jup_conf_rps_dir" && exit 1
 
-    ### Check to see if  jupyter-labextension has been installed
+    ### Check to see if  jupyter-lab has been installed
     #test for path: miniconda3/bin/jupyter-labextension
-    juplab_matchstr="miniconda3/bin/jupyter-labextension"
+    ##3juplab_matchstr="miniconda3/bin/jupyter-labextension"
+    juplab_matchstr="jupyterlab"
+    ###srch_res=$(which jupyter-labextension)
+    cndcmd="conda list"
+    srch_res=$(conda list)
     echo "debug:  juplab_matchstr:  $juplab_matchstr"
-    srch_res=$(which jupyter-labextension)
     echo "debug:  srch_res:  $srch_res"
+echo "debug:  Conda List:  [[[   $srch_res   ]]]"
+
 if [[ ! $srch_res =~ $juplab_matchstr ]]
 then
-        echo "$juplab_matchstr  NOT  FOUND in $srch_res"
+        #echo "$juplab_matchstr  NOT  FOUND in $srch_res"
+        echo "$juplab_matchstr  NOT  FOUND in $cndcmd "
         echo "It looks like you don't have jupyter-lab installed on your account."
         echo "To learn how to install JupyterLab using Miniconda, check out this link: https://comet-notebooks-101.readthedocs.io/en/comet/prerequisites.html"
         exit 0 
     else 
-        echo "$juplab_matchstr  FOUND in $srch_res"
+        echo "$juplab_matchstr FOUND in $cndcmd "
+        echo "$juplab_matchstr FOUND in $cndcmd "
     fi
+exit
 
     # Make a random ssl token
     jupyter_token=$(openssl rand -hex 16)
