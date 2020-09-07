@@ -72,9 +72,9 @@ If you refresh too soon, you may see this page. This is expected and you'll just
 
 Note that the time positional argument must occur after all the flags. There will be an error if you put any flags after the positional argument.
 
-### Examples
-Start a notebook in the debug queue in /share/apps/compute for 30 minutes: 
+### Examples:
+To start a notebook in the debug queue in /share/apps/compute for 30 minutes: 
 `./start_notebook -d /share/apps/compute -p debug -t 30`
 
-Start a notebook in the compute queue in your home directory for 60 minutes: 
+To start a notebook in the compute queue in your home directory for 60 minutes: 
 `./start_notebook -d ~ -p compute -t 60`
