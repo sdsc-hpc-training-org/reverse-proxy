@@ -15,20 +15,19 @@
 #SBATCH --ntasks-per-node=24
 
 # DO NOT EDIT BELOW THIS LINE
-echo $start_root $config $cluster $api_token
+echo "start_root: $start_root"
+source $start_root/lib/check_available.sh
 source $start_root/lib/get_jupyter_port.sh
 
 # Get the comet node's IP (really just the hostname)
 IP="$(hostname -s).local"
+check_available jupyter-notebook "Try 'conda install jupyter'" || exit 1
 jupyter notebook --ip $IP --config $config --no-browser &
 
-# the last pid is stored in this variable
-JUPYTER_PID=$!
-PORT=$(get_jupyter_port $JUPYTER_PID)
+# the jupyter pid is stored in the variable $!
+PORT=$(get_jupyter_port $!)
 
 # redeem the api_token given the untaken port
-echo "cluster $cluster"
-echo "api_token $api_token"
 url='"https://manage.$cluster-user-content.sdsc.edu/redeemtoken.cgi?token=$api_token&port=$PORT"'
 
 # Redeem the api_token

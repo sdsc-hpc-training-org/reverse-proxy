@@ -39,6 +39,8 @@ input_runtime=""
 environment=""
 OPTIND=1
 
+source lib/*.sh
+
 # Submits the a batch job which defines a jupyter notebook
 # Note that behavior is undefined if you configure the script to use
 # a batch script that doesn't work or submits something other than a jupyter
@@ -55,23 +57,19 @@ function start_notebook () {
 
     export api_token=$(echo $api_response | awk 'NF>1{printf $NF}' -)
     # removes the newline char
+    jup_msg="Jupyter not installed. To learn how to install Jupyter using Miniconda,
+    check out this link: https://comet-notebooks-101.readthedocs.io/en/comet/prerequisites.html"
 
-    # remove extra spaces before or after
-    if jupyter --config-dir; then
-        jup_conf_dir="$(jupyter --config-dir)/rps"
-    else 
-        echo "It looks like you don't have jupyter installed on your account."
-        echo "To learn how to install Jupyter using Miniconda, check out this link: https://comet-notebooks-101.readthedocs.io/en/comet/prerequisites.html"
-        exit 0
-    fi
+    check_available jupyter $jup_msg || exit 1
 
     # ensure the jupyter config directory exists and is accessible.
     # make a temp file there for the rps to read tokens
-    mkdir -p $jup_conf_dir || (echo "Failed to create directory $jup_conf_dir" && exit 1)
-    chmod 0700 $jup_conf_dir || (echo "Failed to change permissions on directory $jup_conf_dir" && exit 1)
+    jup_conf_dir="$(jupyter --config-dir)/rps"
+    mkdir -p $jup_conf_dir || (echo "Failed to create dir $jup_conf_dir" && exit 1)
+    chmod 0700 $jup_conf_dir || (echo "Failed to change permissions for $jup_conf_dir" && exit 1)
     export config=`mktemp -p $jup_conf_dir tmp.XXXXXX.py` 
 
-    [[ $config = "" ]] && echo "Failed to make tempfile in $jup_conf_dir" && exit 1
+    [[ $config = "" ]] && echo "Failed to create config file" && exit 1
 
     # Make a random ssl token
     jupyter_token=$(openssl rand -hex 16)
@@ -87,16 +85,20 @@ function start_notebook () {
     echo Your notebook is here:
     echo -e "\t$jupyter_url"
 
-    # start the batch script with the api token and the starting directory
-    # Argument 1 to the batch script is the RP api token
-    # Argument 2 to the batch script is the config path
-
     if [[ $partition = "" ]]; then
         [[ $cluster = "comet" ]] && partition="compute" || partition="interactive" && echo "Using default partition: $partition"
     fi
 
-     [[ $runtime = "" ]] && echo "No time allotment given. Default is 30 mins" && runtime="-t 00:30:00"
+     [[ $runtime = "" ]] && echo "No time given. Default is 30 mins" && runtime="-t 00:30:00"
     
+    export start_root=$PWD
+    [[ $project = "" ]] || project="-A $project"
+
+    check_available sbatch "" && sys="slurm"
+    check_available torque "" && sys="torque" 
+
+    [[ $script = "" ]] && echo "Using ./$sys/notebook.sh" && script="./$sys/notebook.sh"
+
     if [[ $INFO -eq 1 ]]; then
         echo "******************Start notebook info**********************" 
         echo "User $USER"
@@ -111,19 +113,11 @@ function start_notebook () {
         echo "***********************************************************"
     fi
 
-    export start_root=$PWD
-    [[ $project = "" ]] || project="-A $project"
+    
     # if sbatch is available, submit a job using that.
-    if [[ $(which sbatch 2> /dev/null) != "" ]]; then
-        echo "script: $script"
-        [[ "$script" = "" ]] && echo "Using ./slurm/notebook.sh" && script="./slurm/notebook.sh"
-        comment="User,\n$USER,"
-        sbatch --comment=$comment $runtime $project -p $partition $script
-    elif [[ $(which qsub 2> /dev/null) != "" ]]; then
-        [[ $script = "" ]] && echo "Using ./torque/notebook.sh" && script="./torque/notebook.sh"
-	echo "runtime: ${runtime#-t **}"
-	echo "project: $project"
-	echo "script: $script"
+    if [[ $sys = "slurm" ]]; then
+        sbatch $runtime $project -p $partition $script
+    elif [[ $sys = "torque" ]]; then
         qsub -l walltime=${runtime#-t **} $project $script
     else
         echo "No queue system was found. Please use slurm or torque"
@@ -140,9 +134,7 @@ usage() {
     echo "-i: Get extra information about the job you submitted using the script" 1>&2;
 }
 
-source lib/parse_time.sh
-
-while getopts "h?:d:A:p:b:t:i:e" opt; do
+while getopts "h?:d:A:p:b:t:i" opt; do
     case "$opt" in
         h|\?)
             usage 

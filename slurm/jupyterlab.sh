@@ -15,22 +15,16 @@
 #SBATCH --ntasks-per-node=24
 
 # DO NOT EDIT BELOW THIS LINE
+source $start_root/lib/check_available.sh
 source $start_root/lib/get_jupyter_port.sh
 
 # Get the comet node's IP (really just the hostname)
 IP="$(hostname -s).local"
-
-# NOTE: You will need to have jupyterlab installed on your system.
-if [[  $(which jupyterlab 2> /dev/null) = "" ]]
-then
-    echo "Jupyter lab can be installed using 'conda install jupyterlab'"
-fi
-
+check_available jupyter-lab "Try 'conda install jupyterlab'" || exit 1
 jupyter lab --ip $IP --config $config --no-browser &
 
-# the last pid is stored in this variable
-JUPYTER_PID=$!
-PORT=$(get_jupyter_port $JUPYTER_PID)
+# the jupyter pid is stored in the variable $!
+PORT=$(get_jupyter_port $!)
 
 # redeem the api_token given the untaken port
 url='"https://manage.$cluster-user-content.sdsc.edu/redeemtoken.cgi?token=$api_token&port=$PORT"'
