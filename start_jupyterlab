@@ -84,7 +84,7 @@ function start_jupyterlab () {
     juplab_matchstr="jupyterlab"
     ###srch_res=$(which jupyter-labextension)
     cndcmd="conda list"
-    srch_res=$(conda list)
+    srch_res=$(conda list | grep "jupyterlab" )
     echo "debug:  juplab_matchstr:  $juplab_matchstr"
     echo "debug:  srch_res:  $srch_res"
 echo "debug:  Conda List:  [[[   $srch_res   ]]]"
@@ -97,7 +97,6 @@ then
         echo "To learn how to install JupyterLab using Miniconda, check out this link: https://comet-notebooks-101.readthedocs.io/en/comet/prerequisites.html"
         exit 0 
     else 
-        echo "$juplab_matchstr FOUND in $cndcmd "
         echo "$juplab_matchstr FOUND in $cndcmd "
     fi
 exit
