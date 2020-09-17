@@ -57,22 +57,42 @@ function start_jupyterlab () {
     # removes the newline char
     #api_token=$(echo "$api_token" | tr '\n' ' ') 
 
+    ### check to see if jupyter has been installed
     # remove extra spaces before or after
     if jupyter --config-dir; then
-        jup_conf_dir="$(jupyter --config-dir)/rps"
+        jup_conf_rps_dir="$(jupyter --config-dir)/rps"
     else 
         echo "It looks like you don't have jupyter installed on your account."
         echo "To learn how to install Jupyter using Miniconda, check out this link: https://comet-notebooks-101.readthedocs.io/en/comet/prerequisites.html"
         exit 0
     fi
+    jup_conf_dir=$(jupyter --config-dir)
+    echo "debug:  jup_conf_dir:  $jup_conf_dir"
+    echo "debug:  jup_conf_rps_dir:  $jup_conf_rps_dir"
 
     # ensure the jupyter config directory exists and is accessible.
     # make a temp file there for the rps to read tokens
-    mkdir -p $jup_conf_dir || (echo "Failed to create directory $jup_conf_dir" && exit 1)
-    chmod 0700 $jup_conf_dir || (echo "Failed to change permissions on directory $jup_conf_dir" && exit 1)
-    export config=`mktemp -p $jup_conf_dir tmp.XXXXXX.py` 
+    mkdir -p $jup_conf_rps_dir || (echo "Failed to create directory $jup_conf_rps_dir" && exit 1)
+    chmod 0700 $jup_conf_rps_dir || (echo "Failed to change permissions on directory $jup_conf_rps_dir" && exit 1)
+    export config=`mktemp -p $jup_conf_rps_dir tmp.XXXXXX.py` 
 
-    [[ $config = "" ]] && echo "Failed to make tempfile in $jup_conf_dir" && exit 1
+    [[ $config = "" ]] && echo "Failed to make tempfile in $jup_conf_rps_dir" && exit 1
+
+    ### Check to see if  jupyter-labextension has been installed
+    #test for path: miniconda3/bin/jupyter-labextension
+    juplab_matchstr="miniconda3/bin/jupyter-labextension"
+    echo "debug:  juplab_matchstr:  $juplab_matchstr"
+    srch_res=$(which jupyter-labextension)
+    echo "debug:  srch_res:  $srch_res"
+if [[ ! $srch_res =~ $juplab_matchstr ]]
+then
+        echo "$juplab_matchstr  NOT  FOUND in $srch_res"
+        echo "It looks like you don't have jupyter-lab installed on your account."
+        echo "To learn how to install JupyterLab using Miniconda, check out this link: https://comet-notebooks-101.readthedocs.io/en/comet/prerequisites.html"
+        exit 0 
+    else 
+        echo "$juplab_matchstr  FOUND in $srch_res"
+    fi
 
     # Make a random ssl token
     jupyter_token=$(openssl rand -hex 16)
