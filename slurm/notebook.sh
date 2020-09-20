@@ -15,7 +15,6 @@
 #SBATCH --ntasks-per-node=24
 
 # DO NOT EDIT BELOW THIS LINE
-echo "start_root: $start_root"
 source $start_root/lib/check_available.sh
 source $start_root/lib/get_jupyter_port.sh
 

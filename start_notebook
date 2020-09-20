@@ -91,7 +91,7 @@ function start_notebook () {
         [[ $cluster = "comet" ]] && partition="compute" || partition="interactive" && echo "Using default partition: $partition"
     fi
 
-     [[ $runtime = "" ]] && echo "No time given. Default is 30 mins" && runtime="-t 00:30:00"
+    [[ $runtime = "" ]] && echo "No time given. Default is 30 mins" && runtime="-t 00:30:00"
     
     export start_root=$PWD
     [[ $project = "" ]] || project="-A $project"
@@ -115,7 +115,6 @@ function start_notebook () {
         echo "***********************************************************"
     fi
 
-    
     # if sbatch is available, submit a job using that.
     if [[ $sys = "slurm" ]]; then
         sbr=$(sbatch $runtime $project -p $partition $script)

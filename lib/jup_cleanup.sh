@@ -7,10 +7,10 @@ function cleanup() {
     while true;
     do
         sq=$(squeue -h -u $USER -j $slurm_id 2> /dev/null)
-        if [[ $? = 1 || $sq = "" && $(ls $config_path) != "" ]];  then
+        if [[ $? = 1 || $sq = "" && $(find ~ -name $config_path) != "" ]];  then
             # the slurm id is invalid which means you can remove the config path
             # or the slurm id is valid but nothing is found.
-            rm $config_path &> /dev/null
+            rm -f $config_path &> /dev/null
             exit 0
         fi
         sleep 10
