@@ -39,8 +39,9 @@ input_runtime=""
 environment=""
 OPTIND=1
 
-source lib/*.sh
-source lib/cleanup.sh
+source lib/check_available.sh
+source lib/parse_time.sh
+source lib/jup_cleanup.sh
 
 # Submits the a batch job which defines a jupyter notebook
 # Note that behavior is undefined if you configure the script to use
@@ -118,7 +119,6 @@ function start_notebook () {
     # if sbatch is available, submit a job using that.
     if [[ $sys = "slurm" ]]; then
         sbr=$(sbatch $runtime $project -p $partition $script)
-        echo $sbr
         if [[ "$sbr" =~ Submitted\ batch\ job\ ([0-9]+) ]]; then
             cleanup "${BASH_REMATCH[1]}" $config &
             exit 0
@@ -126,7 +126,6 @@ function start_notebook () {
             echo "sbatch failed"
             exit 1
         fi
-
     elif [[ $sys = "torque" ]]; then
         qsub -l walltime=${runtime#-t **} $project $script
     else

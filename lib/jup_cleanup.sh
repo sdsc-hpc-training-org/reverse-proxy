@@ -6,13 +6,13 @@ function cleanup() {
     # while the slurm id is available, do not remove the config file
     while true;
     do
-        sq=$(squeue -h -u $USER -j $slurm_id)
-        if [[ $? = 1 || $sq = "" ]];  then
+        sq=$(squeue -h -u $USER -j $slurm_id 2> /dev/null)
+        if [[ $? = 1 || $sq = "" && $(ls $config_path) != "" ]];  then
             # the slurm id is invalid which means you can remove the config path
             # or the slurm id is valid but nothing is found.
-            echo "Removing $config_path"
-            rm $config_path
+            rm $config_path &> /dev/null
             exit 0
         fi
+        sleep 10
     done
 }
