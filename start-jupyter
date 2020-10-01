@@ -91,13 +91,13 @@ function start-jupyter () {
         [[ $cluster = "comet" ]] && partition="compute" || partition="interactive" && echo "Using default partition: $partition"
     fi
 
-     [[ $runtime = "" ]] && echo "No time given. Default is 30 mins" && runtime="-t 00:30:00"
+    [[ $runtime = "" ]] && echo "No time given. Default is 30 mins" && runtime="-t 00:30:00"
     
     export start_root=$PWD
     [[ $project = "" ]] || project="-A $project"
 
     check_available sbatch "" && sys="slurm"
-    check_available torque "" && sys="torque" 
+    check_available qsub "" && sys="torque" 
 
     [[ $script = "" ]] && echo "Using ./$sys/notebook.sh" && script="./$sys/notebook.sh"
 
@@ -115,19 +115,27 @@ function start-jupyter () {
         echo "***********************************************************"
     fi
 
-    
     # if sbatch is available, submit a job using that.
     if [[ $sys = "slurm" ]]; then
         sbr=$(sbatch $runtime $project -p $partition $script)
         if [[ "$sbr" =~ Submitted\ batch\ job\ ([0-9]+) ]]; then
-            cleanup "${BASH_REMATCH[1]}" $config &
+            cleanup_slurm "${BASH_REMATCH[1]}" $config &
             exit 0
         else
-            echo "sbatch failed"
+            echo "Sbatch failed"
             exit 1
         fi
     elif [[ $sys = "torque" ]]; then
-        qsub -l walltime=${runtime#-t **} $project $script
+        qout=$(qsub -l walltime=${runtime#-t **} $project $script)
+	echo $qout
+	if [[ "$qout" =~ [0-9]+.tscc-mgr[0-9].local ]]; then
+	    qid=$(echo "${BASH_REMATCH[@]}" | sed 's/[^0-9]*//g')
+	    #cleanup_torque $qid $config &
+	    exit 0
+	else
+	    echo "Torque failed"
+	    exit 1
+	fi
     else
         echo "No queue system was found. Please use slurm or torque"
     fi
