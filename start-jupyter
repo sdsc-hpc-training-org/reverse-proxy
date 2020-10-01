@@ -7,7 +7,7 @@
 
 ## ====================================================================================
 ## Usage
-##  ./start_notebook [-p <string>] [-d <string>] [-b <string>] [-t <number>]
+##  ./start-jupyter [-p <string>] [-d <string>] [-b <string>] [-t <number>]
 ##
 ##      -p: The partition your job will be started on. This can be either compute or
 ##          debug. Reminder that the debug queue has a max time of 30 minutes.
@@ -47,7 +47,7 @@ source lib/jup_cleanup.sh
 # Note that behavior is undefined if you configure the script to use
 # a batch script that doesn't work or submits something other than a jupyter
 # notebook. Its not recommended that you change anything in this function.
-function start_notebook () {
+function start-jupyter () {
 
     # if the cluster is tscc or tscc-stratus, use tscc-user-content
     # otherwise use comet-user-content
@@ -171,4 +171,4 @@ if [[ $partition = "debug" ]]; then
     fi
 fi
 
-start_notebook
+start-jupyter
