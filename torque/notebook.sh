@@ -11,45 +11,26 @@
 
 ## You can add your own slurm directives here, but they will override
 ## anything you gave to the start_notebook script like the time, partition, etc
-#SBATCH --nodes=1
-#SBATCH --ntasks-per-node=24
-#SBATCH --wait 0
+#PBS -l nodes=1
+#PBS -o notebook-torque.out
+#PBS -e notebook-torque.out
 
 # DO NOT EDIT BELOW THIS LINE
+#PBS -V
 
-## This function takes  one parameter, the PID of the jupyter notebook process
-## The function returns the port which that jupyter notebook is running on.
-function get_jupyter_port() {
-    PID=$1
-    GREP_OUT=""
-    while [[ -z $GREP_OUT ]]; do
-        sleep 1
-        PORT_REGEX='^\s*\"port\":\s*\d+,$'
-        JUP_PATH=$(jupyter --runtime-dir)
-        GREP_OUT=$(grep -P $PORT_REGEX $(grep -lr $PID $JUP_PATH))
-    done
-    PORT=${GREP_OUT#*'"port":'}
-    PORT=${PORT:0:5}
-    echo $PORT
-}
+source $start_root/lib/get_jupyter_port.sh
 
 # Get the comet node's IP (really just the hostname)
 IP="$(hostname -s).local"
-
-# NOTE: You will need to have jupyterlab installed on your system.
-if [[  $(which jupyterlab) = "" ]]
-then
-    echo "Jupyter lab can be installed using 'conda install jupyterlab'"
-fi
-
-jupyter lab --ip $IP --config $config --no-browser &
+jupyter notebook --ip $IP --config $config --no-browser &
 
 # the last pid is stored in this variable
 JUPYTER_PID=$!
 PORT=$(get_jupyter_port $JUPYTER_PID)
 
 # redeem the api_token given the untaken port
-url='"https://manage.comet-user-content.sdsc.edu/redeemtoken.cgi?token=$api_token&port=$PORT"'
+echo "cluster $cluster"
+url='"https://manage.$cluster-user-content.sdsc.edu/redeemtoken.cgi?token=$api_token&port=$PORT"'
 
 # Redeem the api_token
 eval curl $url
