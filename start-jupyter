@@ -86,6 +86,7 @@ function start-jupyter () {
     export jupyter_url="https://$api_token.$cluster-user-content.sdsc.edu?token=$jupyter_token"
     echo Your notebook is here:
     echo -e "\t$jupyter_url"
+    echo "If you encounter any issues, please email help@xsede.org and mention the Reverse Proxy Service."
 
     if [[ $partition = "" ]]; then
         [[ $cluster = "comet" ]] && partition="compute" || partition="interactive" && echo "Using default partition: $partition"
