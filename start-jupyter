@@ -97,8 +97,16 @@ function start-jupyter () {
     export start_root=$PWD
     [[ $project = "" ]] || project="-A $project"
 
-    check_available sbatch "" && sys="slurm"
-    check_available qsub "" && sys="torque" 
+    check_available sbatch ""
+    if [[ $? = 0 ]]; then
+        sys=slurm
+    else
+        check_available qsub ""
+        if [[ $? = 0 ]]; then
+            sys=torque
+        fi
+    fi
+    
 
     [[ $script = "" ]] && echo "Using ./$sys/notebook.sh" && script="./$sys/notebook.sh"
 
@@ -128,15 +136,13 @@ function start-jupyter () {
         fi
     elif [[ $sys = "torque" ]]; then
         qout=$(qsub -l walltime=${runtime#-t **} $project $script)
-	echo $qout
-	if [[ "$qout" =~ [0-9]+.tscc-mgr[0-9].local ]]; then
-	    qid=$(echo "${BASH_REMATCH[@]}" | sed 's/[^0-9]*//g')
-	    #cleanup_torque $qid $config &
-	    exit 0
-	else
-	    echo "Torque failed"
-	    exit 1
-	fi
+        if [[ "$qout" =~ [0-9]+.tscc-mgr[0-9].local ]]; then
+            qid=$(echo "${BASH_REMATCH[@]}" | sed 's/[^0-9]*//g')
+            exit 0
+        else
+            echo "Torque failed"
+            exit 1
+        fi
     else
         echo "No queue system was found. Please use slurm or torque"
     fi
