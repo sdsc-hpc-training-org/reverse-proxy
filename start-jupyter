@@ -26,6 +26,8 @@
 ##      -t: The time in MINTUES that you want the jupyter notebook to run for.
 ##          Default: 30 minutes
 ##
+##      -s: The server to run for the user, can be 'notebook' for jupyter notebook or 
+##          'jupyterlab' for jupyterlab
 ##
 ## =====================================================================================
 
@@ -37,6 +39,7 @@ partition=""
 script=""
 input_runtime=""
 environment=""
+server=""
 OPTIND=1
 
 source lib/check_available.sh
@@ -108,9 +111,18 @@ function start-jupyter () {
             sys=torque
         fi
     fi
-    
 
-    [[ $script = "" ]] && echo "Using ./$sys/notebook.sh" && script="./$sys/notebook.sh"
+    if [[ $server = "" ]]; then
+        server="notebook"
+    fi
+
+    if [[ $server != "notebook" && $server != "jupyterlab" ]]; then
+        echo Chose an invalid server. Choices are 'notebook' or 'jupyterlab'
+        usage
+        exit 1
+    fi
+    
+    [[ $script = "" ]] && echo Using ./"$sys"/"$server".sh
 
     if [[ $INFO -eq 1 ]]; then
         echo "******************Start notebook info**********************" 
@@ -158,13 +170,16 @@ usage() {
     echo -e "-b: the batch script you want to submit. Only those in the batch folder are supported. Default is ./batch/batch_notebook.sh" 1>&2;
     echo "-t: the time to run the notebook. Default is 30 minutes" 1>&2;
     echo "-i: Get extra information about the job you submitted using the script" 1>&2;
+    echo "-s: Choose between 'notebook' and 'jupyterlab'"
 }
 
-while getopts "h?:d:A:p:b:t:i" opt; do
+while getopts "h?:d:A:s:p:b:t:i" opt; do
     case "$opt" in
         h|\?)
             usage 
             exit 0
+            ;;
+        s)  server=$OPTARG
             ;;
         d)  start_dir=$OPTARG 
             ;;
@@ -187,7 +202,6 @@ while getopts "h?:d:A:p:b:t:i" opt; do
 done
 
 remaining=${@:$OPTIND}
-echo "Remaining args: ${#remaining[@]}"
 if [[ ${#remaining[@]} > 1 ]]; then
     echo "Invalid Arguments Remaining: $remaining"
     echo "There should be no positional arguments here."
