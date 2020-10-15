@@ -24,8 +24,8 @@ function cleanup_torque() {
     # while the slurm id is available, do not remove the config file
     while true;
     do
-        qo=$(qstat $qid | tail -n +2 2> /dev/null)
-        if [[ $? = 1 || $qo = "" && $(find ~ -name $config_path) != "" ]];  then
+        qo=$(qstat $qid 2> /dev/null | tail -n +2 2> /dev/null)
+        if [[ $? = 1 || $qo = "" && $(find ~ -name $config_path 2> /dev/null) != "" ]];  then
             # the slurm id is invalid which means you can remove the config path
             # or the slurm id is valid but nothing is found.
             rm -f $config_path &> /dev/null

@@ -127,7 +127,6 @@ function start_notebook () {
         fi
     elif [[ $sys = "torque" ]]; then
         qout=$(qsub -l walltime=${runtime#-t **} $project $script)
-	echo $qout
 	if [[ "$qout" =~ [0-9]+.tscc-mgr[0-9].local ]]; then
 	    qid=$(echo "${BASH_REMATCH[@]}" | sed 's/[^0-9]*//g')
 	    #cleanup_torque $qid $config &
