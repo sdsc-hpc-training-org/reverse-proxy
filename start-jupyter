@@ -89,10 +89,12 @@ function start-jupyter () {
     echo "If you encounter any issues, please email help@xsede.org and mention the Reverse Proxy Service."
 
     if [[ $partition = "" ]]; then
-        [[ $cluster = "comet" ]] && partition="compute" || partition="interactive" && echo "Using default partition: $partition"
+        [[ $cluster = "comet" ]] && partition="compute" || partition="interactive" && echo "Using partition: $partition"
     fi
 
-    [[ $runtime = "" ]] && echo "No time given. Default is 30 mins" && runtime="-t 00:30:00"
+    partition="-p $partition"
+
+    [[ $runtime = "" ]] && echo "No time given. Default is 30 mins" && runtime="-t 00:30:00" || runtime="-t $runtime"
     
     export start_root=$PWD
     [[ $project = "" ]] || project="-A $project"
@@ -126,7 +128,7 @@ function start-jupyter () {
 
     # if sbatch is available, submit a job using that.
     if [[ $sys = "slurm" ]]; then
-        sbr=$(sbatch $runtime $project -p $partition $script)
+        sbr=$(sbatch $runtime $project $partition $script)
         if [[ "$sbr" =~ Submitted\ batch\ job\ ([0-9]+) ]]; then
             cleanup_slurm "${BASH_REMATCH[1]}" $config &
             exit 0
@@ -164,11 +166,16 @@ while getopts "h?:d:A:p:b:t:i" opt; do
             usage 
             exit 0
             ;;
-        d)  start_dir=$OPTARG ;;
-        A)  project=$OPTARG   ;;
-        p)  partition=$OPTARG ;;
-        b)  script=$OPTARG ;;
-        i)  INFO=1 ;;
+        d)  start_dir=$OPTARG 
+            ;;
+        A)  project=$OPTARG   
+            ;;
+        p)  partition=$OPTARG 
+            ;;
+        b)  script=$OPTARG 
+            ;;
+        i)  INFO=1 
+            ;;
         t)  input_runtime=$OPTARG 
             runtime=$(parse_time $OPTARG) 
             ;;
@@ -178,6 +185,15 @@ while getopts "h?:d:A:p:b:t:i" opt; do
             ;;
     esac
 done
+
+remaining=${@:$OPTIND}
+echo "Remaining args: ${#remaining[@]}"
+if [[ ${#remaining[@]} > 1 ]]; then
+    echo "Invalid Arguments Remaining: $remaining"
+    echo "There should be no positional arguments here."
+    usage
+    exit 1
+fi
 
 if [[ $partition = "debug" ]]; then
     if [[ $input_runtime -gt 30 ]]; then
