@@ -7,7 +7,7 @@
 
 ## ====================================================================================
 ## Usage
-##  ./start_notebook [-p <string>] [-d <string>] [-b <string>] [-t <number>]
+##  ./start-jupyter [-p <string>] [-d <string>] [-b <string>] [-t <number>]
 ##
 ##      -p: The partition your job will be started on. This can be either compute or
 ##          debug. Reminder that the debug queue has a max time of 30 minutes.
@@ -26,6 +26,8 @@
 ##      -t: The time in MINTUES that you want the jupyter notebook to run for.
 ##          Default: 30 minutes
 ##
+##      -s: The server to run for the user, can be 'notebook' for jupyter notebook or 
+##          'jupyterlab' for jupyterlab
 ##
 ## =====================================================================================
 
@@ -37,6 +39,7 @@ partition=""
 script=""
 input_runtime=""
 environment=""
+server=""
 OPTIND=1
 
 source lib/check_available.sh
@@ -47,7 +50,7 @@ source lib/jup_cleanup.sh
 # Note that behavior is undefined if you configure the script to use
 # a batch script that doesn't work or submits something other than a jupyter
 # notebook. Its not recommended that you change anything in this function.
-function start_notebook () {
+function start-jupyter () {
 
     # if the cluster is tscc or tscc-stratus, use tscc-user-content
     # otherwise use comet-user-content
@@ -86,20 +89,40 @@ function start_notebook () {
     export jupyter_url="https://$api_token.$cluster-user-content.sdsc.edu?token=$jupyter_token"
     echo Your notebook is here:
     echo -e "\t$jupyter_url"
+    echo "If you encounter any issues, please email help@xsede.org and mention the Reverse Proxy Service."
 
     if [[ $partition = "" ]]; then
-        [[ $cluster = "comet" ]] && partition="compute" || partition="interactive" && echo "Using default partition: $partition"
+        [[ $cluster = "comet" ]] && partition="compute" || partition="interactive" && echo "Using partition: $partition"
     fi
 
-    [[ $runtime = "" ]] && echo "No time given. Default is 30 mins" && runtime="-t 00:30:00"
+    partition="-p $partition"
+
+    [[ $runtime = "" ]] && echo "No time given. Default is 30 mins" && runtime="-t 00:30:00" || runtime="-t $runtime"
     
     export start_root=$PWD
     [[ $project = "" ]] || project="-A $project"
 
-    check_available sbatch "" && sys="slurm"
-    check_available qsub "" && sys="torque" 
+    check_available sbatch ""
+    if [[ $? = 0 ]]; then
+        sys=slurm
+    else
+        check_available qsub ""
+        if [[ $? = 0 ]]; then
+            sys=torque
+        fi
+    fi
 
-    [[ $script = "" ]] && echo "Using ./$sys/notebook.sh" && script="./$sys/notebook.sh"
+    if [[ $server = "" ]]; then
+        server="notebook"
+    fi
+
+    if [[ $server != "notebook" && $server != "jupyterlab" ]]; then
+        echo Chose an invalid server. Choices are 'notebook' or 'jupyterlab'
+        usage
+        exit 1
+    fi
+    
+    [[ $script = "" ]] && echo Using ./"$sys"/"$server".sh && script=./"$sys"/"$server".sh
 
     if [[ $INFO -eq 1 ]]; then
         echo "******************Start notebook info**********************" 
@@ -117,7 +140,7 @@ function start_notebook () {
 
     # if sbatch is available, submit a job using that.
     if [[ $sys = "slurm" ]]; then
-        sbr=$(sbatch $runtime $project -p $partition $script)
+        sbr=$(sbatch $runtime $project $partition $script)
         if [[ "$sbr" =~ Submitted\ batch\ job\ ([0-9]+) ]]; then
             cleanup_slurm "${BASH_REMATCH[1]}" $config &
             exit 0
@@ -127,14 +150,13 @@ function start_notebook () {
         fi
     elif [[ $sys = "torque" ]]; then
         qout=$(qsub -l walltime=${runtime#-t **} $project $script)
-	if [[ "$qout" =~ [0-9]+.tscc-mgr[0-9].local ]]; then
-	    qid=$(echo "${BASH_REMATCH[@]}" | sed 's/[^0-9]*//g')
-	    #cleanup_torque $qid $config &
-	    exit 0
-	else
-	    echo "Torque failed"
-	    exit 1
-	fi
+        if [[ "$qout" =~ [0-9]+.tscc-mgr[0-9].local ]]; then
+            qid=$(echo "${BASH_REMATCH[@]}" | sed 's/[^0-9]*//g')
+            exit 0
+        else
+            echo "Torque failed"
+            exit 1
+        fi
     else
         echo "No queue system was found. Please use slurm or torque"
     fi
@@ -148,19 +170,27 @@ usage() {
     echo -e "-b: the batch script you want to submit. Only those in the batch folder are supported. Default is ./batch/batch_notebook.sh" 1>&2;
     echo "-t: the time to run the notebook. Default is 30 minutes" 1>&2;
     echo "-i: Get extra information about the job you submitted using the script" 1>&2;
+    echo "-s: Choose between 'notebook' and 'jupyterlab'"
 }
 
-while getopts "h?:d:A:p:b:t:i" opt; do
+while getopts "h?:d:A:s:p:b:t:i" opt; do
     case "$opt" in
         h|\?)
             usage 
             exit 0
             ;;
-        d)  start_dir=$OPTARG ;;
-        A)  project=$OPTARG   ;;
-        p)  partition=$OPTARG ;;
-        b)  script=$OPTARG ;;
-        i)  INFO=1 ;;
+        s)  server=$OPTARG
+            ;;
+        d)  start_dir=$OPTARG 
+            ;;
+        A)  project=$OPTARG   
+            ;;
+        p)  partition=$OPTARG 
+            ;;
+        b)  script=$OPTARG 
+            ;;
+        i)  INFO=1 
+            ;;
         t)  input_runtime=$OPTARG 
             runtime=$(parse_time $OPTARG) 
             ;;
@@ -171,6 +201,14 @@ while getopts "h?:d:A:p:b:t:i" opt; do
     esac
 done
 
+remaining=${@:$OPTIND}
+if [[ ${#remaining[@]} > 1 ]]; then
+    echo "Invalid Arguments Remaining: $remaining"
+    echo "There should be no positional arguments here."
+    usage
+    exit 1
+fi
+
 if [[ $partition = "debug" ]]; then
     if [[ $input_runtime -gt 30 ]]; then
         echo "Invalid runtime for debug queue. Must be less than or equal to 30 minutes"
@@ -178,4 +216,4 @@ if [[ $partition = "debug" ]]; then
     fi
 fi
 
-start_notebook
+start-jupyter
