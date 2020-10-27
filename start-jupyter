@@ -20,14 +20,15 @@
 ##          but you can see your accounts using the `show_accounts` command.
 ##
 ##      -b: The batch script you want to submit. Of course the batch script needs to
-##          start a jupyter notebook otherwise this script will fail.
+##          start a jupyter notebook otherwise this script will fail. Cannot be used
+##          simultaneously with the -s flag. 
 ##          Default: ./batch/batch_notebook.sh
 ##
 ##      -t: The time in MINTUES that you want the jupyter notebook to run for.
 ##          Default: 30 minutes
 ##
 ##      -s: The server to run for the user, can be 'notebook' for jupyter notebook or 
-##          'jupyterlab' for jupyterlab
+##          'jupyterlab' for jupyterlab. Cannot be used simultaneously with the -b flag.
 ##
 ## =====================================================================================
 
