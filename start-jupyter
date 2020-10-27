@@ -215,7 +215,7 @@ done
 [[ $pos_args ]] && echo "Encountered positional arguments where none are required."
 
 # if there is a conflict between the -s and -b flags
-[[ $sb_conflict = 2 ]] && echo "You cannot use the -s flag and the -b flag simultaneously" 
+[[ $sb_conflict = 2 ]] && echo "You cannot use the -s flag and the -b flag simultaneously" && err=1
 
 if [[ $partition = "debug" ]]; then
     if [[ $input_runtime -gt 30 ]]; then
@@ -223,7 +223,6 @@ if [[ $partition = "debug" ]]; then
         err=1
     fi
 fi
-
 [[ $err = 1 ]] && usage && exit 1
 
 start-jupyter
