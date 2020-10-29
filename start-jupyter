@@ -7,7 +7,7 @@
 
 ## ====================================================================================
 ## Usage
-##  ./start-jupyter [-p <string>] [-d <string>] [-b <string>] [-t <number>]
+##  ./start-jupyter [-p <string>] [-d <string>] [-b <string>] [-t <number>] [-s <jupyerlab, notebook>]
 ##
 ##      -p: The partition your job will be started on. This can be either compute or
 ##          debug. Reminder that the debug queue has a max time of 30 minutes.
@@ -41,7 +41,6 @@ script=""
 input_runtime=""
 environment=""
 server=""
-OPTIND=1
 
 source lib/check_available.sh
 source lib/parse_time.sh
@@ -174,6 +173,7 @@ usage() {
     echo "-s: Choose between 'notebook' and 'jupyterlab'"
 }
 
+OPTIND=1
 err=0
 sb_conflict=0
 while [ $OPTIND -le "$#" ]
