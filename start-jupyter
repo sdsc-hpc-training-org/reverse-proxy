@@ -142,7 +142,10 @@ function start-jupyter () {
     if [[ $sys = "slurm" ]]; then
         sbr=$(sbatch $runtime $project $partition $script)
         if [[ "$sbr" =~ Submitted\ batch\ job\ ([0-9]+) ]]; then
-            cleanup_slurm "${BASH_REMATCH[1]}" $config &
+            slurm_id=${BASH_REMATCH[1]}
+            echo Your job id is $slurm_id
+            echo "You may occasionally run the command 'squeue -j $slurm_id' to check the status of your job"
+            cleanup_slurm $slurm_id $config &
             exit 0
         else
             echo "Sbatch failed"
@@ -152,6 +155,7 @@ function start-jupyter () {
         qout=$(qsub -l walltime=${runtime#-t **} $project $script)
         if [[ "$qout" =~ [0-9]+.tscc-mgr[0-9].local ]]; then
             qid=$(echo "${BASH_REMATCH[@]}" | sed 's/[^0-9]*//g')
+            echo $qid
             exit 0
         else
             echo "Torque failed"
