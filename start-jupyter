@@ -102,11 +102,11 @@ function start-jupyter () {
     export start_root=$PWD
     [[ $project = "" ]] || project="-A $project"
 
-    check_available sbatch ""
+    check_available sbatch "" > /dev/null
     if [[ $? = 0 ]]; then
         sys=slurm
     else
-        check_available qsub ""
+        check_available qsub "" > /dev/null
         if [[ $? = 0 ]]; then
             sys=torque
         fi
@@ -155,7 +155,9 @@ function start-jupyter () {
         qout=$(qsub -l walltime=${runtime#-t **} $project $script)
         if [[ "$qout" =~ [0-9]+.tscc-mgr[0-9].local ]]; then
             qid=$(echo "${BASH_REMATCH[@]}" | sed 's/[^0-9]*//g')
-            echo $qid
+	    qid="${qid:0:${#qid}-1}"
+            echo Your job id is $qid
+	    echo "You may occasionally run the command 'qstat $qid' to check the status of your job"
             exit 0
         else
             echo "Torque failed"
