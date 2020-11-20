@@ -46,6 +46,7 @@ OPTIND=1
 source lib/check_available.sh
 source lib/parse_time.sh
 source lib/jup_cleanup.sh
+source lib/remove_old_files.sh
 
 # Submits the a batch job which defines a jupyter notebook
 # Note that behavior is undefined if you configure the script to use
@@ -76,6 +77,9 @@ function start-jupyter () {
     export config=`mktemp -p $jup_conf_dir tmp.XXXXXX.py` 
 
     [[ $config = "" ]] && echo "Failed to create config file" && exit 1
+
+    # remove old tmp files in this dir if still there
+    remove_old_files $jup_conf_dir 10
 
     # Make a random ssl token
     jupyter_token=$(openssl rand -hex 16)
