@@ -65,7 +65,7 @@ function start-jupyter () {
     [[ $response == Oops!* ]] && echo $response && exit 1
 
     export api_token=$(echo $response | awk 'NF>1{printf $((NF-1))}' -)
-    echo Api token: $api_token
+
     # removes the newline char
     jup_msg="Jupyter not installed. To learn how to install Jupyter using Miniconda,
     check out this link: https://comet-notebooks-101.readthedocs.io/en/comet/prerequisites.html"
