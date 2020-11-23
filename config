@@ -1,0 +1,24 @@
+Host TSCC:
+  hostname: tscc-*
+  endpoint: https://manage.tscc-user-content.sdsc.edu/getlink.cgi
+  system: torque
+  default_dir: torque
+
+Host TSCC-Stratus:
+  hostname: tscc-stratus-*
+  endpoint: https://manage.tscc-user-content.sdsc.edu/getlink.cgi
+  system: slurm
+  default: slurm
+
+Host Comet:
+  hostname: comet-*
+  endpoint: https://manage.comet-user-content.sdsc.edu/getlink.cgi
+  system: slurm
+  default: slurm
+
+Host Expanse:
+  hostname: expanse-*
+  endpoint: https://manage.expanse-user-content.sdsc.edu/getlink.cgi
+  system: slurm
+  default: slurm-expanse
+   
