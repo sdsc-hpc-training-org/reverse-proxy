@@ -33,7 +33,7 @@ url='"https://manage.$cluster-user-content.sdsc.edu/redeemtoken.cgi?token=$api_t
 eval curl $url
 
 # try to remove the config file.
-rm $config
+rm -f $config
 
 # waits for all child processes to complete, which means it waits for the jupyter notebook to be terminated
 wait

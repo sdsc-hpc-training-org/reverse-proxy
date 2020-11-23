@@ -57,10 +57,15 @@ function start-jupyter () {
     hostname=$(hostname -s) && export cluster=${hostname%-*}
 
     # get the Reverse proxy API_TOKEN
-    api_response=$(curl -s https://manage.$cluster-user-content.sdsc.edu/getlink.cgi) 
-    [[ $api_response == Oops!* ]] && echo $api_response && exit 1
+    response=$(curl -s -w %{http_code} https://manage.$cluster-user-content.sdsc.edu/getlink.cgi -o -)
+    status=$(echo $response | awk '{print $NF}')
 
-    export api_token=$(echo $api_response | awk 'NF>1{printf $NF}' -)
+    [[ $status != 200 ]] && echo "Error connecting to reverse proxy" && exit 1
+
+    [[ $response == Oops!* ]] && echo $response && exit 1
+
+    export api_token=$(echo $response | awk 'NF>1{printf $((NF-1))}' -)
+    echo Api token: $api_token
     # removes the newline char
     jup_msg="Jupyter not installed. To learn how to install Jupyter using Miniconda,
     check out this link: https://comet-notebooks-101.readthedocs.io/en/comet/prerequisites.html"
