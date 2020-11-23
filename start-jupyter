@@ -54,6 +54,13 @@ source lib/remove_old_files.sh
 # notebook. Its not recommended that you change anything in this function.
 function start-jupyter () {
 
+    # TODO: read config
+    # TODO: use config to pattern match the hostname
+    # then use all the information in the config to fill out the fields in this file
+    # Fields: hostname (pattern matching), endpoint (url), system (queue system), 
+    # default (dir with batch files)
+    vars=$(read_config $(hostname -s))
+
     # if the cluster is tscc or tscc-stratus, use tscc-user-content
     # otherwise use comet-user-content
     hostname=$(hostname -s) && export cluster=${hostname%-*}
