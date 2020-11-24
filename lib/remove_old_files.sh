@@ -2,8 +2,6 @@
 function remove_old_files() {
   for file in $1/*
   do
-    echo "File: $file"
-
     # on comet
     #lastModificationSeconds=$(date +%s -r $file)
     #currentSeconds=$(date +%s)

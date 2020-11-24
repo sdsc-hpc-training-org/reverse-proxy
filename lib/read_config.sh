@@ -1,19 +1,18 @@
 
 function read_config() {
   hostnameToMatch=$1
-  echo "Host name to match: $hostnameToMatch"
-  awkout=$(awk '/^Host/{flag=1;next}flag{print}' config |  sed -e 's/^[ \t]*//')
+  awkout=$(awk '/^Host/{flag=1;next}flag{print}' .config |  sed -e 's/^[ \t]*//')
   line=0
   # this loops over all the lines
   host=()
+  #echo Hostname to Match: $hostnameToMatch
   while IFS=$'\n' read -ra OUT; do
 
     # this should be one line
-    if [ $((line%4)) -eq 0 ]; then
+    if [ $((line%5)) -eq 0 ]; then
       # at some point could sort the host array
       # to allow users to add to config in any order
-      echo "Can I match $hostnameToMatch to ${host[0]}"
-      [[ $hostnameToMatch =~ ${host[0]} ]] && echo "Match found"
+      [[ $hostnameToMatch =~ ${host[0]} ]] && echo ${host[@]}
       host=()
     fi
     for i in "${OUT[@]}"; do
