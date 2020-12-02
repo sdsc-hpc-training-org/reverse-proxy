@@ -65,7 +65,7 @@ function start-jupyter () {
     jup_msg="Jupyter not installed. To learn how to install Jupyter using Miniconda,
     check out this link: https://comet-notebooks-101.readthedocs.io/en/comet/prerequisites.html"
 
-    check_available jupyter $jup_msg || exit 1
+    check_available jupyter "'$jup_msg'" || exit 1
 
     # ensure the jupyter config directory exists and is accessible.
     # make a temp file there for the rps to read tokens
