@@ -49,14 +49,14 @@ jup_msg="Jupyter not installed. To learn how to install Jupyter using Miniconda,
 # Example Config:
 #Host Comet:
 #  hostname: comet-*
-#  endpoint: https://manage.comet-user-content.sdsc.edu/getlink.cgi
+#  endpoint: comet-user-content.sdsc.edu
 #  system: slurm
 #  default-partition: compute
 #  batch-dir: slurm
 
 vars=($(read_config $(hostname -s)))
 echo Config: ${vars[@]}
-endpoint=${vars[1]} 
+export endpoint=${vars[1]} 
 queue=${vars[2]}
 partition=${vars[3]}
 batch_dir=${vars[4]}
@@ -67,7 +67,7 @@ batch_dir=${vars[4]}
 # notebook. Its not recommended that you change anything in this function.
 function start-jupyter () {
     # get the Reverse proxy API_TOKEN
-    response=$(curl -s -w %{http_code} $endpoint -o -)
+    response=$(curl -s -w %{http_code} https://manage.$endpoint/getlink.cgi -o -)
     status=$(echo $response | awk '{print $NF}')
 
     [[ $status != 200 ]] && echo "Error connecting to reverse proxy" && exit 1
@@ -99,7 +99,7 @@ function start-jupyter () {
     echo "c.NotebookApp.allow_remote_access = True" | cat >> "$config"
 
     # Give the user their url
-    export jupyter_url="$endpoint?token=$jupyter_token"
+    export jupyter_url="https://$api_token.$endpoint?token=$jupyter_token"
     echo Your notebook is here:
     echo -e "\t$jupyter_url"
     echo "If you encounter any issues, please email help@xsede.org and mention the Reverse Proxy Service."
@@ -111,16 +111,6 @@ function start-jupyter () {
     export start_root=$PWD
     [[ $project = "" ]] || project="-A $project"
 
-    check_available sbatch ""
-    if [[ $? = 0 ]]; then
-        sys=slurm
-    else
-        check_available qsub ""
-        if [[ $? = 0 ]]; then
-            sys=torque
-        fi
-    fi
-
     if [[ $server = "" ]]; then
         server="notebook"
     fi
@@ -131,7 +121,7 @@ function start-jupyter () {
         exit 1
     fi
     
-    [[ $script = "" ]] && echo Using ./"$sys"/"$server".sh && script=./"$sys"/"$server".sh
+    [[ $script = "" ]] && echo Using ./"$batch_dir"/"$server".sh && script=./"$batch_dir"/"$server".sh
 
     if [[ $INFO -eq 1 ]]; then
         echo "******************Start notebook info**********************" 
@@ -148,7 +138,7 @@ function start-jupyter () {
     fi
 
     # if sbatch is available, submit a job using that.
-    if [[ $sys = "slurm" ]]; then
+    if [[ $queue = "slurm" ]]; then
         sbr=$(sbatch $runtime $project $partition $script)
         if [[ "$sbr" =~ Submitted\ batch\ job\ ([0-9]+) ]]; then
             slurm_id=${BASH_REMATCH[1]}
@@ -160,7 +150,7 @@ function start-jupyter () {
             echo "Sbatch failed"
             exit 1
         fi
-    elif [[ $sys = "torque" ]]; then
+    elif [[ $queue = "torque" ]]; then
         qout=$(qsub -l walltime=${runtime#-t **} $project $script)
         if [[ "$qout" =~ [0-9]+.tscc-mgr[0-9].local ]]; then
             qid=$(echo "${BASH_REMATCH[@]}" | sed 's/[^0-9]*//g')
