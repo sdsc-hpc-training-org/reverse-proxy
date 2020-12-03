@@ -56,7 +56,7 @@ function start-jupyter () {
     # otherwise use comet-user-content
     ###hostname=$(hostname -s) && export cluster=${hostname%-*}
     ##hostname=$(hostname -s) && export cluster=${hostname%-*}
-    hostname=$(hostname)
+    hostname=$(hostname -f)
     export cluster=$hostname 
 
    # get the Reverse proxy API_TOKEN
@@ -240,4 +240,5 @@ if [[ $partition = "debug" ]]; then
 fi
 [[ $err = 1 ]] && usage && exit 1
 
+## call function at top of script
 start-jupyter
