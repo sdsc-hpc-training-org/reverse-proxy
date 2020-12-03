@@ -27,7 +27,7 @@ jupyter lab --ip $IP --config $config --no-browser &
 PORT=$(get_jupyter_port $!)
 
 # redeem the api_token given the untaken port
-url='"https://manage.$cluster-user-content.sdsc.edu/redeemtoken.cgi?token=$api_token&port=$PORT"'
+url='"https://manage.$endpoint/redeemtoken.cgi?token=$api_token&port=$PORT"'
 
 # Redeem the api_token
 eval curl $url
