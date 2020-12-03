@@ -102,12 +102,11 @@ echo "api_token= $api_token"
     echo -e "\t$jupyter_url"
     echo "If you encounter any issues, please email help@xsede.org and mention the Reverse Proxy Service."
 
+    partition="-p shared"
     if [[ $partition = "" ]]; then
         [[ $cluster = "comet" ]] && partition="compute" || partition="interactive" && echo "Using partition: $partition"
     fi
-
-    ###partition="-p $partition"
-    partition="-p compute"
+    echo "Using partition: $partition"
 
     [[ $runtime = "" ]] && echo "No time given. Default is 30 mins" && runtime="-t 00:30:00" || runtime="-t $runtime"
      
@@ -137,7 +136,7 @@ echo "api_token= $api_token"
     
     [[ $script = "" ]] && echo Using ./"$sys"/"$server".sh && script=./"$sys"/"$server".sh
 
-INFO=0
+INFO=1
     if [[ $INFO -eq 1 ]]; then
         echo "******************Start notebook info**********************" 
         echo "User $USER"

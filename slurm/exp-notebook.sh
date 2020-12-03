@@ -24,6 +24,7 @@
 
 ## Environment
 module purge
+module load sdsc
 module load slurm
 #module load cpu
 #module load gcc/10.2.0
