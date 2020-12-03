@@ -29,7 +29,6 @@ module load slurm
 #module load gcc/10.2.0
 
 # DO NOT EDIT BELOW THIS LINE
-echo "Batch:: start_root:  $start_root"
 echo "Batch:: config:  $config"
 source $start_root/lib/check_available.sh
 source $start_root/lib/get_jupyter_port.sh
