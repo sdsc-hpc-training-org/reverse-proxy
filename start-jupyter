@@ -204,9 +204,9 @@ do
                 ;;
         esac
     else
-            pos_args=1
-            err=1
-            ((OPTIND++))
+    	pos_args=1
+        err=1
+        ((OPTIND++))
     fi
 done
 

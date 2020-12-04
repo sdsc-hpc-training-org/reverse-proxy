@@ -21,7 +21,7 @@
 source $start_root/lib/get_jupyter_port.sh
 
 # Get the comet node's IP (really just the hostname)
-IP="$(hostname -s).local"
+IP=$(hostname -s).local
 jupyter notebook --ip $IP --config $config --no-browser &
 
 # the last pid is stored in this variable
@@ -29,8 +29,7 @@ JUPYTER_PID=$!
 PORT=$(get_jupyter_port $JUPYTER_PID)
 
 # redeem the api_token given the untaken port
-echo "cluster $cluster"
-url='"https://manage.$cluster-user-content.sdsc.edu/redeemtoken.cgi?token=$api_token&port=$PORT"'
+url='"https://manage.$endpoint/redeemtoken.cgi?token=$api_token&port=$PORT"'
 
 # Redeem the api_token
 eval curl $url
