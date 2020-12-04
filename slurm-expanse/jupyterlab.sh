@@ -10,7 +10,7 @@
 ## ======================================================================
 
 ## You can add your own slurm directives here, but they will override
-## anything you gave to the start_notebook script like the time, partition, etc
+## anything you gave to the start-jupyter script like the time, partition, etc
 #SBATCH --nodes=1
 #SBATCH --ntasks-per-node=24
 

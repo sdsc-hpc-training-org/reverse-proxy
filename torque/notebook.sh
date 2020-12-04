@@ -4,13 +4,13 @@
 ## reverse proxy jupyter notebook. This batch script creates the jupyter
 ## notebook on a compute node, while the start notebook script is used to
 ## submit this batch script. You should never submit this batch script on
-## its own, e.g. `sbatch batch_notebook.sh`. Don't do that :). You can
+## its own, e.g. `sbatch torque/notebook.sh`. Don't do that :). You can
 ## specify this particluar batch script by using the -b flag, e.g.
-## ./start_notebook.sh -b batch/batch_notebook.sh
+## ./start-jupyter -b torque/notebook.sh
 ## ======================================================================
 
 ## You can add your own slurm directives here, but they will override
-## anything you gave to the start_notebook script like the time, partition, etc
+## anything you gave to the start-jupyter script like the time, partition, etc
 #PBS -l nodes=1
 #PBS -o notebook-torque.out
 #PBS -e notebook-torque.out
@@ -29,7 +29,7 @@ JUPYTER_PID=$!
 PORT=$(get_jupyter_port $JUPYTER_PID)
 
 # redeem the api_token given the untaken port
-url='"https://manage.$cluster-user-content.sdsc.edu/redeemtoken.cgi?token=$api_token&port=$PORT"'
+url='"https://manage.$endpoint/redeemtoken.cgi?token=$api_token&port=$PORT"'
 
 # Redeem the api_token
 eval curl $url
