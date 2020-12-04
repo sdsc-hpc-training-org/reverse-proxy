@@ -44,9 +44,7 @@ runtime=""
 project=""
 input_runtime=""
 jup_msg="Jupyter not installed. To learn how to install Jupyter using Miniconda, check out this link: https://comet-notebooks-101.readthedocs.io/en/comet/prerequisites.html"
-
-
-# Example Config:
+## Example Config
 #Host Comet:
 #  hostname: comet-*
 #  endpoint: comet-user-content.sdsc.edu
@@ -59,8 +57,7 @@ export endpoint=${vars[1]}
 queue=${vars[2]}
 partition=${vars[3]}
 batch_dir=${vars[4]}
-require_account=0
-[[ "$endpoint" =~ expanse-* ]] && require_account=1
+[[ "$endpoint" =~ expanse-* ]] && require_account=1 || require_account=0
 
 # Submits the a batch job which defines a jupyter notebook
 # Note that behavior is undefined if you configure the script to use
