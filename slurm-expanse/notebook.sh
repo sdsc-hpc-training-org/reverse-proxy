@@ -32,9 +32,8 @@ module load slurm
 source $start_root/lib/check_available.sh
 source $start_root/lib/get_jupyter_port.sh
 
-# Get the comet node's IP (really just the hostname)
-###IP="$(hostname -s).local"
-IP="$(hostname -s).expanse.sdsc.edu"
+# Get the expanse node's IP (really just the hostname)
+IP=$(hostname -s).eth.cluster 
 check_available jupyter-notebook "Try 'conda install jupyter'" || exit 1
 jupyter notebook --ip $IP --config $config --no-browser &
 
@@ -43,7 +42,6 @@ PORT=$(get_jupyter_port $!)
 
 # redeem the api_token given the untaken port
 url='"https://manage.$endpoint/redeemtoken.cgi?token=$api_token&port=$PORT"'
-echo "Batch:: url:  $url"
 
 # Redeem the api_token
 eval curl $url
