@@ -116,7 +116,7 @@ function start-jupyter () {
         exit 1
     fi
     
-    [[ $script = "" ]] && echo Using ./"$batch_dir"/"$server".sh && script=./"$batch_dir"/"$server".sh
+    [[ $script = "" ]] && echo Using ./$batch_dir/"$server".sh && script=./$batch_dir/"$server".sh
 
     if [[ $INFO -eq 1 ]]; then
         echo "******************Start notebook info**********************" 
@@ -133,7 +133,7 @@ function start-jupyter () {
     fi
 
     # if sbatch is available, submit a job using that.
-    if [[ $queue = "slurm" ]]; then
+    if [[ $queue = slurm ]]; then
         sbr=$(sbatch $runtime $project $partition $script)
         if [[ "$sbr" =~ Submitted\ batch\ job\ ([0-9]+) ]]; then
             slurm_id=${BASH_REMATCH[1]}
@@ -145,18 +145,18 @@ function start-jupyter () {
             echo "Sbatch failed"
             exit 1
         fi
-    elif [[ $queue = "torque" ]]; then
+    elif [[ $queue = torque ]]; then
         qout=$(qsub -l walltime=${runtime#-t **} $project $script)
         if [[ "$qout" =~ [0-9]+.tscc-mgr[0-9].local ]]; then
             qid=$(echo "${BASH_REMATCH[@]}" | sed 's/[^0-9]*//g')
             echo $qid
             exit 0
         else
-            echo "Torque failed"
+            echo Torque failed
             exit 1
         fi
     else
-        echo "No queue system was found. Please use slurm or torque"
+        echo No queue system found. Please use slurm or torque
     fi
 }
 
@@ -204,9 +204,9 @@ do
                 ;;
         esac
     else
-            pos_args=1
-            err=1
-            ((OPTIND++))
+        pos_args=1
+        err=1
+        ((OPTIND++))
     fi
 done
 
