@@ -55,11 +55,12 @@ jup_msg="Jupyter not installed. To learn how to install Jupyter using Miniconda,
 #  batch-dir: slurm
 
 vars=($(read_config $(hostname -s)))
-echo Config: ${vars[@]}
 export endpoint=${vars[1]} 
 queue=${vars[2]}
 partition=${vars[3]}
 batch_dir=${vars[4]}
+require_account=0
+[[ "$endpoint" =~ expanse-* ]] && require_account=1
 
 # Submits the a batch job which defines a jupyter notebook
 # Note that behavior is undefined if you configure the script to use
@@ -223,6 +224,12 @@ if [[ $partition = "debug" ]]; then
         err=1
     fi
 fi
+
+if [[ $project = "" && $require_account = 1 ]]; then
+    echo "Expanse requries you to explicitly specify your account. Please provide the -A <Account> argument"
+    err=1
+fi
+
 [[ $err = 1 ]] && usage && exit 1
 
 start-jupyter
