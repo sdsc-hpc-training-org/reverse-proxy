@@ -25,8 +25,6 @@
 ## Environment
 module purge
 module load slurm
-#module load cpu
-#module load gcc/10.2.0
 
 # DO NOT EDIT BELOW THIS LINE
 source $start_root/lib/check_available.sh
