@@ -12,8 +12,8 @@
 ## You can add your own slurm directives here, but they will override
 ## anything you gave to the start-jupyter script like the time, partition, etc
 #PBS -l nodes=1
-#PBS -o notebook-torque.out
-#PBS -e notebook-torque.out
+#PBS -o $PBS_JOBID.out
+#PBS -e $PBS_JOBID.out 
 
 # DO NOT EDIT BELOW THIS LINE
 #PBS -V

@@ -53,6 +53,7 @@ jup_msg="Jupyter not installed. To learn how to install Jupyter using Miniconda,
 #  batch-dir: slurm
 
 vars=($(read_config $(hostname -s)))
+echo ${vars[@]}
 export endpoint=${vars[1]} 
 queue=${vars[2]}
 partition=${vars[3]}
