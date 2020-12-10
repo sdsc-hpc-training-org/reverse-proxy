@@ -44,6 +44,7 @@ runtime=""
 project=""
 input_runtime=""
 jup_msg="Jupyter not installed. To learn how to install Jupyter using Miniconda, check out this link: https://comet-notebooks-101.readthedocs.io/en/comet/prerequisites.html"
+
 ## Example Config
 #Host Comet:
 #  hostname: comet-*
@@ -150,7 +151,9 @@ function start-jupyter () {
         qout=$(qsub -l walltime=${runtime#-t **} $project $script)
         if [[ "$qout" =~ [0-9]+.tscc-mgr[0-9].local ]]; then
             qid=$(echo "${BASH_REMATCH[@]}" | sed 's/[^0-9]*//g')
-            echo $qid
+	    qid="${qid:0:${#qid}-1}"
+            echo Your job id is $qid
+	    echo "You may occasionally run the command 'qstat $qid' to check the status of your job"
             exit 0
         else
             echo Torque failed
