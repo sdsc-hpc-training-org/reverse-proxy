@@ -1,4 +1,6 @@
 #!/bin/bash
+# THIS SCRIPT IS DEPRECATED. PLEASE DO NOT USE UNLESS YOU REALLY NEED TO.
+# start-jupyter does the same things as this script but better!
 # Authors: Developed by James McDougall [Github JamesMcDougallJr], Scott Sakai, and Mary Thomas.
 # The goal of this script is to start a jupyter notebook on various HPC Systems by using the Reverse Proxy service.
 # This makes a secure connection between the user's local machine and the RP server.
