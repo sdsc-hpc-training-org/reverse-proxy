@@ -72,6 +72,7 @@ function start-jupyter () {
     [[ $status != 200 ]] && echo "Error connecting to reverse proxy" && exit 1
     [[ $response == Oops!* ]] && echo $response && exit 1
     export api_token=$(echo $response | awk 'NF>1{printf $((NF-1))}' -)
+
     check_available jupyter "'$jup_msg'" || exit 1
 
     # ensure the jupyter config directory exists and is accessible.
