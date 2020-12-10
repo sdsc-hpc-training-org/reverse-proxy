@@ -4,29 +4,27 @@
 ## reverse proxy jupyter notebook. This batch script creates the jupyter
 ## notebook on a compute node, while the start notebook script is used to
 ## submit this batch script. You should never submit this batch script on
-## its own, e.g. `sbatch torque/notebook.sh`. Don't do that :). You can
+## its own, e.g. `sbatch slurm-expanse/jupyterlab.sh`. Don't do that :). You can
 ## specify this particluar batch script by using the -b flag, e.g.
-## ./start-jupyter -b torque/notebook.sh
+## ./start-jupyter -b slurm-expanse/jupyterlab.sh
 ## ======================================================================
 
 ## You can add your own slurm directives here, but they will override
 ## anything you gave to the start-jupyter script like the time, partition, etc
-#PBS -l nodes=1
-#PBS -o $PBS_JOBID.out
-#PBS -e $PBS_JOBID.out 
+#SBATCH --nodes=1
+#SBATCH --ntasks-per-node=24
 
 # DO NOT EDIT BELOW THIS LINE
-#PBS -V
-
+source $start_root/lib/check_available.sh
 source $start_root/lib/get_jupyter_port.sh
 
 # Get the comet node's IP (really just the hostname)
-IP=$(hostname -s).local
-jupyter notebook --ip $IP --config $config --no-browser &
+IP=$(hostname -s).eth.cluster
+check_available jupyter-lab "Try 'conda install jupyterlab'" || exit 1
+jupyter lab --ip $IP --config $config --no-browser &
 
-# the last pid is stored in this variable
-JUPYTER_PID=$!
-PORT=$(get_jupyter_port $JUPYTER_PID)
+# the jupyter pid is stored in the variable $!
+PORT=$(get_jupyter_port $!)
 
 # redeem the api_token given the untaken port
 url='"https://manage.$endpoint/redeemtoken.cgi?token=$api_token&port=$PORT"'

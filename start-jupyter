@@ -32,19 +32,34 @@
 ##
 ## =====================================================================================
 
-INFO=0
-start_dir=""
-runtime=""
-project=""
-partition=""
-script=""
-input_runtime=""
-environment=""
-server=""
-
 source lib/check_available.sh
 source lib/parse_time.sh
 source lib/jup_cleanup.sh
+source lib/remove_old_files.sh
+source lib/read_config.sh
+
+INFO=0
+jup_root_dir=""
+runtime=""
+project=""
+input_runtime=""
+jup_msg="Jupyter not installed. To learn how to install Jupyter using Miniconda, check out this link: https://comet-notebooks-101.readthedocs.io/en/comet/prerequisites.html"
+
+## Example Config
+#Host Comet:
+#  hostname: comet-*
+#  endpoint: comet-user-content.sdsc.edu
+#  system: slurm
+#  default-partition: compute
+#  batch-dir: slurm
+
+vars=($(read_config $(hostname -s)))
+echo ${vars[@]}
+export endpoint=${vars[1]} 
+queue=${vars[2]}
+partition=${vars[3]}
+batch_dir=${vars[4]}
+[[ "$endpoint" =~ expanse-* ]] && require_account=1 || require_account=0
 
 # Submits the a batch job which defines a jupyter notebook
 # Note that behavior is undefined if you configure the script to use
@@ -52,18 +67,12 @@ source lib/jup_cleanup.sh
 # notebook. Its not recommended that you change anything in this function.
 function start-jupyter () {
 
-    # if the cluster is tscc or tscc-stratus, use tscc-user-content
-    # otherwise use comet-user-content
-    hostname=$(hostname -s) && export cluster=${hostname%-*}
-
     # get the Reverse proxy API_TOKEN
-    api_response=$(curl -s https://manage.$cluster-user-content.sdsc.edu/getlink.cgi) 
-    [[ $api_response == Oops!* ]] && echo $api_response && exit 1
-
-    export api_token=$(echo $api_response | awk 'NF>1{printf $NF}' -)
-    # removes the newline char
-    jup_msg="Jupyter not installed. To learn how to install Jupyter using Miniconda,
-    check out this link: https://comet-notebooks-101.readthedocs.io/en/comet/prerequisites.html"
+    response=$(curl -s -w %{http_code} https://manage.$endpoint/getlink.cgi -o -)
+    status=$(echo $response | awk '{print $NF}')
+    [[ $status != 200 ]] && echo "Error connecting to reverse proxy" && exit 1
+    [[ $response == Oops!* ]] && echo $response && exit 1
+    export api_token=$(echo $response | awk 'NF>1{printf $((NF-1))}' -)
 
     check_available jupyter "'$jup_msg'" || exit 1
 
@@ -73,27 +82,25 @@ function start-jupyter () {
     mkdir -p $jup_conf_dir || (echo "Failed to create dir $jup_conf_dir" && exit 1)
     chmod 0700 $jup_conf_dir || (echo "Failed to change permissions for $jup_conf_dir" && exit 1)
     export config=`mktemp -p $jup_conf_dir tmp.XXXXXX.py` 
-
     [[ $config = "" ]] && echo "Failed to create config file" && exit 1
+
+    # remove old tmp files in this dir if still there
+    remove_old_files $jup_conf_dir 10
 
     # Make a random ssl token
     jupyter_token=$(openssl rand -hex 16)
 
     # Create the temp config file
     echo "c.NotebookApp.token = '$jupyter_token'" | cat >> "$config"
-    [[ $start_dir = "" ]] && start_dir=/home/$USER/ && echo "c.NotebookApp.notebook_dir = '$start_dir'" | cat >> "$config"
+    [[ $jup_root_dir = "" ]] && jup_root_dir=/home/$USER/ && echo "c.NotebookApp.notebook_dir = '$jup_root_dir'" | cat >> "$config"
     echo "c.NotebookApp.allow_origin = '*'" | cat >> "$config"
     echo "c.NotebookApp.allow_remote_access = True" | cat >> "$config"
 
     # Give the user their url
-    export jupyter_url="https://$api_token.$cluster-user-content.sdsc.edu?token=$jupyter_token"
+    export jupyter_url="https://$api_token.$endpoint?token=$jupyter_token"
     echo Your notebook is here:
     echo -e "\t$jupyter_url"
     echo "If you encounter any issues, please email help@xsede.org and mention the Reverse Proxy Service."
-
-    if [[ $partition = "" ]]; then
-        [[ $cluster = "comet" ]] && partition="compute" || partition="interactive" && echo "Using partition: $partition"
-    fi
 
     partition="-p $partition"
 
@@ -101,16 +108,6 @@ function start-jupyter () {
     
     export start_root=$PWD
     [[ $project = "" ]] || project="-A $project"
-
-    check_available sbatch "" > /dev/null
-    if [[ $? = 0 ]]; then
-        sys=slurm
-    else
-        check_available qsub "" > /dev/null
-        if [[ $? = 0 ]]; then
-            sys=torque
-        fi
-    fi
 
     if [[ $server = "" ]]; then
         server="notebook"
@@ -122,7 +119,7 @@ function start-jupyter () {
         exit 1
     fi
     
-    [[ $script = "" ]] && echo Using ./"$sys"/"$server".sh && script=./"$sys"/"$server".sh
+    [[ $script = "" ]] && echo Using ./$batch_dir/"$server".sh && script=./$batch_dir/"$server".sh
 
     if [[ $INFO -eq 1 ]]; then
         echo "******************Start notebook info**********************" 
@@ -139,7 +136,7 @@ function start-jupyter () {
     fi
 
     # if sbatch is available, submit a job using that.
-    if [[ $sys = "slurm" ]]; then
+    if [[ $queue = slurm ]]; then
         sbr=$(sbatch $runtime $project $partition $script)
         if [[ "$sbr" =~ Submitted\ batch\ job\ ([0-9]+) ]]; then
             slurm_id=${BASH_REMATCH[1]}
@@ -151,7 +148,7 @@ function start-jupyter () {
             echo "Sbatch failed"
             exit 1
         fi
-    elif [[ $sys = "torque" ]]; then
+    elif [[ $queue = torque ]]; then
         qout=$(qsub -l walltime=${runtime#-t **} $project $script)
         if [[ "$qout" =~ [0-9]+.tscc-mgr[0-9].local ]]; then
             qid=$(echo "${BASH_REMATCH[@]}" | sed 's/[^0-9]*//g')
@@ -160,11 +157,11 @@ function start-jupyter () {
 	    echo "You may occasionally run the command 'qstat $qid' to check the status of your job"
             exit 0
         else
-            echo "Torque failed"
+            echo Torque failed
             exit 1
         fi
     else
-        echo "No queue system was found. Please use slurm or torque"
+        echo No queue system found. Please use slurm or torque
     fi
 }
 
@@ -212,9 +209,9 @@ do
                 ;;
         esac
     else
-            pos_args=1
-            err=1
-            ((OPTIND++))
+    	pos_args=1
+        err=1
+        ((OPTIND++))
     fi
 done
 
@@ -229,6 +226,12 @@ if [[ $partition = "debug" ]]; then
         err=1
     fi
 fi
+
+if [[ $project = "" && $require_account = 1 ]]; then
+    echo "Expanse requries you to explicitly specify your account. Please provide the -A <Account> argument"
+    err=1
+fi
+
 [[ $err = 1 ]] && usage && exit 1
 
 start-jupyter

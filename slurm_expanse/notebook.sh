@@ -1,32 +1,36 @@
 #!/bin/bash
+##
 ## ======================================================================
 ## This is an example batch script which can be submitted as part of a
 ## reverse proxy jupyter notebook. This batch script creates the jupyter
 ## notebook on a compute node, while the start notebook script is used to
 ## submit this batch script. You should never submit this batch script on
-## its own, e.g. `sbatch torque/notebook.sh`. Don't do that :). You can
-## specify this particluar batch script by using the -b flag, e.g.
-## ./start-jupyter -b torque/notebook.sh
+## its own, e.g. `sbatch slurm-expanse/notebook.sh`. Don't do that :).
+## You can specify this particluar batch script by using the -b flag, e.g.
+## ./start-jupyter -b slurm-expanse/notebook.sh
 ## ======================================================================
 
-## You can add your own slurm directives here, but they will override
+## You can add your own slurm directives here, but they may override
 ## anything you gave to the start-jupyter script like the time, partition, etc
-#PBS -l nodes=1
-#PBS -o $PBS_JOBID.out
-#PBS -e $PBS_JOBID.out 
+#SBATCH --nodes=1
+#SBATCH --ntasks-per-node=1
+#SBATCH --export=ALL
+
+## Environment
+module purge
+module load slurm
 
 # DO NOT EDIT BELOW THIS LINE
-#PBS -V
-
+source $start_root/lib/check_available.sh
 source $start_root/lib/get_jupyter_port.sh
 
-# Get the comet node's IP (really just the hostname)
-IP=$(hostname -s).local
+# Get the expanse node's IP (really just the hostname)
+IP=$(hostname -s).eth.cluster
+check_available jupyter-notebook "Try 'conda install jupyter'" || exit 1
 jupyter notebook --ip $IP --config $config --no-browser &
 
-# the last pid is stored in this variable
-JUPYTER_PID=$!
-PORT=$(get_jupyter_port $JUPYTER_PID)
+# the jupyter pid is stored in the variable $!
+PORT=$(get_jupyter_port $!)
 
 # redeem the api_token given the untaken port
 url='"https://manage.$endpoint/redeemtoken.cgi?token=$api_token&port=$PORT"'
