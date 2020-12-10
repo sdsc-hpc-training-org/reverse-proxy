@@ -18,6 +18,7 @@
 # DO NOT EDIT BELOW THIS LINE
 #PBS -V
 source $start_root/lib/get_jupyter_port.sh
+source $start_root/lib/check_available.sh
 
 # Get the comet node's IP (really just the hostname)
 IP=$(hostname -s).local
