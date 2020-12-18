@@ -67,11 +67,11 @@ batch_dir=${vars[4]}
 function start-jupyter () {
 
     # get the Reverse proxy API_TOKEN
-    response=$(curl -s -w %{http_code} https://manage.$endpoint/getlink.cgi -o -)
-    status=$(echo $response | awk '{print $NF}')
+    response="$(curl -s -w %{http_code} https://manage.$endpoint/getlink.cgi -o -)"
+    status="$(echo $response | awk '{print $NF}')"
     [[ $status != 200 ]] && echo "Error connecting to reverse proxy" && exit 1
     [[ $response == Oops!* ]] && echo $response && exit 1
-    export api_token=$(echo $response | awk 'NF>1{printf $((NF-1))}' -)
+    export api_token="$(echo $response | awk 'NF>1{printf $((NF-1))}' -)"
 
     check_available jupyter "'$jup_msg'" || exit 1
 
@@ -87,7 +87,7 @@ function start-jupyter () {
     remove_old_files $jup_conf_dir 10
 
     # Make a random ssl token
-    jupyter_token=$(openssl rand -hex 16)
+    jupyter_token="$(openssl rand -hex 16)"
 
     # Create the temp config file
     echo "c.NotebookApp.token = '$jupyter_token'" | cat >> "$config"
