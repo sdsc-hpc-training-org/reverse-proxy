@@ -38,7 +38,7 @@ source lib/jup_cleanup.sh
 source lib/remove_old_files.sh
 source lib/read_config.sh
 
-INFO=0
+info=0
 jup_root_dir=""
 runtime=""
 project=""
@@ -105,7 +105,7 @@ function start-jupyter () {
 
     [[ $runtime = "" ]] && echo "No time given. Default is 30 mins" && runtime="-t 00:30:00" || runtime="-t $runtime"
     
-    export start_root=$PWD
+    export start_root="$PWD"
     [[ $project = "" ]] || project="-A $project"
 
     if [[ $server = "" ]]; then
@@ -120,7 +120,7 @@ function start-jupyter () {
     
     [[ $script = "" ]] && echo Using ./$batch_dir/"$server".sh && script=./$batch_dir/"$server".sh
 
-    if [[ $INFO -eq 1 ]]; then
+    if [[ $info -eq 1 ]]; then
         echo "******************Start notebook info**********************" 
         echo "User $USER"
         echo "On cluster $cluster"
@@ -164,6 +164,7 @@ function start-jupyter () {
     fi
 }
 
+
 usage() { 
     echo "Usage: $0 [-p <string>] [-d <string>] [-A <string>] [-b <string>] [-t time] [-i]" 1>&2;
     echo -e "-p: the partition to use, debug or compute. Default is compute" 1>&2;
@@ -174,6 +175,7 @@ usage() {
     echo "-i: Get extra information about the job you submitted using the script" 1>&2;
     echo "-s: Choose between 'notebook' and 'jupyterlab'"
 }
+
 
 OPTIND=1
 err=0
@@ -186,22 +188,22 @@ do
                 usage 
                 exit 0
                 ;;
-            s)  server=$OPTARG
-                sb_conflict=$((sb_conflict+1))
+            s)  server="$OPTARG"
+                sb_conflict="$((sb_conflict+1))"
                 ;;
-            d)  start_dir=$OPTARG 
+            d)  start_dir="$OPTARG" 
                 ;;
-            A)  project=$OPTARG   
+            A)  project="$OPTARG"
                 ;;
-            p)  partition=$OPTARG 
+            p)  partition="$OPTARG" 
                 ;;
-            b)  script=$OPTARG 
-                sb_conflict=$((sb_conflict+1))
+            b)  script="$OPTARG" 
+                sb_conflict="$((sb_conflict+1))"
                 ;;
-            i)  INFO=1 
+            i)  info=1 
                 ;;
-            t)  input_runtime=$OPTARG 
-                runtime=$(parse_time $OPTARG) 
+            t)  input_runtime="$OPTARG" 
+                runtime="$(parse_time $OPTARG)"
                 ;;
             *)  echo "Error: invalid optional argument $OPTARG" 
                 err=1
