@@ -54,7 +54,6 @@ jup_msg="Jupyter not installed. To learn how to install Jupyter using Miniconda,
 #  batch-dir: slurm
 
 vars=($(read_config $(hostname -s)))
-echo ${vars[@]}
 export endpoint=${vars[1]} 
 queue=${vars[2]}
 partition=${vars[3]}
@@ -136,7 +135,8 @@ function start-jupyter () {
 
     # if sbatch is available, submit a job using that.
     if [[ $queue = slurm ]]; then
-        sbr=$(sbatch $runtime $project $partition $script)
+        #sbr=$(sbatch $runtime $project $partition $script)
+        sbr=$(sbatch $script)
         if [[ "$sbr" =~ Submitted\ batch\ job\ ([0-9]+) ]]; then
             slurm_id=${BASH_REMATCH[1]}
             echo Your job id is $slurm_id

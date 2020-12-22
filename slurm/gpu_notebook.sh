@@ -12,6 +12,11 @@
 ## You can add your own slurm directives here, but they will override
 ## anything you gave to the start-jupyter script like the time, partition, etc
 
+#SBATCH -A sds173
+#SBATCH -p gpu
+#SBATCH --gres=gpu:4
+#SBATCH -t 00:30:00
+
 # DO NOT EDIT BELOW THIS LINE
 source $start_root/lib/check_available.sh
 source $start_root/lib/get_jupyter_port.sh
