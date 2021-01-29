@@ -31,19 +31,23 @@
 ##          'jupyterlab' for jupyterlab. Cannot be used simultaneously with the -b flag.
 ##
 ## =====================================================================================
+source $PWD/lib/check_available.sh
+source $PWD/lib/parse_time.sh
+source $PWD/lib/jup_cleanup.sh
+source $PWD/lib/remove_old_files.sh
+source $PWD/lib/read_config.sh
+source $PWD/lib/make_jupyter_config.sh
 
-source lib/check_available.sh
-source lib/parse_time.sh
-source lib/jup_cleanup.sh
-source lib/remove_old_files.sh
-source lib/read_config.sh
-
-INFO=0
-jup_root_dir=""
-runtime=""
+info=0
+force=0
+gpus=""
+jup_root_dir="/home/$USER"
+runtime="-t 00:30:00"
 project=""
-input_runtime=""
+image=""
+server="notebook"
 jup_msg="Jupyter not installed. To learn how to install Jupyter using Miniconda, check out this link: https://comet-notebooks-101.readthedocs.io/en/comet/prerequisites.html"
+
 ## Example Config
 #Host Comet:
 #  hostname: comet-*
@@ -53,25 +57,28 @@ jup_msg="Jupyter not installed. To learn how to install Jupyter using Miniconda,
 #  batch-dir: slurm
 
 vars=($(read_config $(hostname -s)))
-echo ${vars[@]}
-export endpoint=${vars[1]} 
-queue=${vars[2]}
-partition=${vars[3]}
-batch_dir=${vars[4]}
-[[ "$endpoint" =~ expanse-* ]] && require_account=1 || require_account=0
+export endpoint="${vars[1]}"
+manager="${vars[2]}"
+partition="-p ${vars[3]}"
+batch_dir="${vars[4]}"
+[[ $endpoint =~ expanse-* ]] && require_account=1 || require_account=0
 
-# Submits the a batch job which defines a jupyter notebook
-# Note that behavior is undefined if you configure the script to use
-# a batch script that doesn't work or submits something other than a jupyter
-# notebook. Its not recommended that you change anything in this function.
+# Its not recommended that you change anything in this function.
 function start-jupyter () {
 
     # get the Reverse proxy API_TOKEN
-    response=$(curl -s -w %{http_code} https://manage.$endpoint/getlink.cgi -o -)
-    status=$(echo $response | awk '{print $NF}')
-    [[ $status != 200 ]] && echo "Error connecting to reverse proxy" && exit 1
-    [[ $response == Oops!* ]] && echo $response && exit 1
-    export api_token=$(echo $response | awk 'NF>1{printf $((NF-1))}' -)
+    response="$(curl -s -w %{http_code} https://manage.$endpoint/getlink.cgi -o -)"
+    status="$(echo $response | awk '{print $NF}')"
+    if [[ $status != 200 ]]; then
+        echo "Error connecting to reverse proxy: $status" 
+        echo $response
+        exit 1
+    fi
+    if [[ $response == Oops!* ]]; then
+        echo $response 
+        exit 1
+    fi
+    export api_token="$(echo $response | awk 'NF>1{printf $((NF-1))}' -)"
     check_available jupyter "'$jup_msg'" || exit 1
 
     # ensure the jupyter config directory exists and is accessible.
@@ -80,36 +87,26 @@ function start-jupyter () {
     mkdir -p $jup_conf_dir || (echo "Failed to create dir $jup_conf_dir" && exit 1)
     chmod 0700 $jup_conf_dir || (echo "Failed to change permissions for $jup_conf_dir" && exit 1)
     export config=`mktemp -p $jup_conf_dir tmp.XXXXXX.py` 
-    [[ $config = "" ]] && echo "Failed to create config file" && exit 1
+
+    if [[ $config = "" ]]; then
+        echo "Failed to create config file" 
+        exit 1
+    fi
 
     # remove old tmp files in this dir if still there
     remove_old_files $jup_conf_dir 10
 
     # Make a random ssl token
-    jupyter_token=$(openssl rand -hex 16)
-
-    # Create the temp config file
-    echo "c.NotebookApp.token = '$jupyter_token'" | cat >> "$config"
-    [[ $jup_root_dir = "" ]] && jup_root_dir=/home/$USER/ && echo "c.NotebookApp.notebook_dir = '$jup_root_dir'" | cat >> "$config"
-    echo "c.NotebookApp.allow_origin = '*'" | cat >> "$config"
-    echo "c.NotebookApp.allow_remote_access = True" | cat >> "$config"
+    jupyter_token="$(openssl rand -hex 16)"
+    make_jupyter_config $config $jupyter_token $jup_root_dir
 
     # Give the user their url
     export jupyter_url="https://$api_token.$endpoint?token=$jupyter_token"
-    echo Your notebook is here:
+    echo "Your notebook is here:"
     echo -e "\t$jupyter_url"
     echo "If you encounter any issues, please email help@xsede.org and mention the Reverse Proxy Service."
 
-    partition="-p $partition"
-
-    [[ $runtime = "" ]] && echo "No time given. Default is 30 mins" && runtime="-t 00:30:00" || runtime="-t $runtime"
-    
-    export start_root=$PWD
-    [[ $project = "" ]] || project="-A $project"
-
-    if [[ $server = "" ]]; then
-        server="notebook"
-    fi
+    export start_root="$PWD"
 
     if [[ $server != "notebook" && $server != "jupyterlab" ]]; then
         echo Chose an invalid server. Choices are 'notebook' or 'jupyterlab'
@@ -117,26 +114,34 @@ function start-jupyter () {
         exit 1
     fi
     
-    [[ $script = "" ]] && echo Using ./$batch_dir/"$server".sh && script=./$batch_dir/"$server".sh
+    if [[ $script = "" ]]; then
+        script=./$batch_dir/"$server".sh
+        echo "Using $script"
+    fi
 
-    if [[ $INFO -eq 1 ]]; then
+    if [[ $info -eq 1 ]]; then
         echo "******************Start notebook info**********************" 
         echo "User $USER"
         echo "On cluster $cluster"
-        echo "Using default project" 
+        echo "Using project $project" 
         echo "Batch Script: $script"
         echo "Partition: $partition"
         echo "Tempfile: $config"
         echo "Api token: $api_token"
         echo "Jupyter token: $jupyter_token"
         echo "Runtime: $runtime"
+        echo "GPUS: $gpus"
         echo "***********************************************************"
     fi
 
     # if sbatch is available, submit a job using that.
-    if [[ $queue = slurm ]]; then
-        sbr=$(sbatch $runtime $project $partition $script)
-        if [[ "$sbr" =~ Submitted\ batch\ job\ ([0-9]+) ]]; then
+    if [[ $manager = "slurm" ]]; then
+        if [[ $force = 1 ]]; then
+            sbr="$(sbatch $script)" 
+        else
+            sbr="$(sbatch $runtime $project $partition $gpus $script)"
+        fi  
+        if [[ $sbr =~ Submitted\ batch\ job\ ([0-9]+) ]]; then
             slurm_id=${BASH_REMATCH[1]}
             echo Your job id is $slurm_id
             echo "You may occasionally run the command 'squeue -j $slurm_id' to check the status of your job"
@@ -146,10 +151,10 @@ function start-jupyter () {
             echo "Sbatch failed"
             exit 1
         fi
-    elif [[ $queue = torque ]]; then
-        qout=$(qsub -l walltime=${runtime#-t **} $project $script)
-        if [[ "$qout" =~ [0-9]+.tscc-mgr[0-9].local ]]; then
-            qid=$(echo "${BASH_REMATCH[@]}" | sed 's/[^0-9]*//g')
+    elif [[ $manager = "torque" ]]; then
+        qout=$(qsub -l walltime="${runtime#-t **}" $project $script)
+        if [[ $qout =~ [0-9]+.tscc-mgr[0-9].local ]]; then
+            qid="$(echo "${BASH_REMATCH[@]}" | sed 's/[^0-9]*//g')"
             echo $qid
             exit 0
         else
@@ -177,28 +182,35 @@ err=0
 sb_conflict=0
 while [ $OPTIND -le "$#" ]
 do
-    if getopts "h?:d:A:s:p:b:t:i" opt; then
+    if getopts "h?:d:A:g:s:p:b:t:i:fI" opt; then
         case "$opt" in
             h|\?)
                 usage 
                 exit 0
                 ;;
-            s)  server=$OPTARG
-                sb_conflict=$((sb_conflict+1))
+            g)  gpus="--gres=gpu:$OPTARG"
+                echo $gpus
                 ;;
-            d)  start_dir=$OPTARG 
+            s)  server="$OPTARG"
+                sb_conflict="$((sb_conflict+1))"
                 ;;
-            A)  project=$OPTARG   
+            d)  jup_root_dir="$OPTARG"
                 ;;
-            p)  partition=$OPTARG 
+            A)  project="-A $OPTARG" 
+                echo  $project
                 ;;
-            b)  script=$OPTARG 
-                sb_conflict=$((sb_conflict+1))
+            p)  partition="-p $OPTARG"
                 ;;
-            i)  INFO=1 
+            b)  script="$OPTARG"
+                sb_conflict="$((sb_conflict+1))"
                 ;;
-            t)  input_runtime=$OPTARG 
-                runtime=$(parse_time $OPTARG) 
+            I)  info=1 
+                ;;
+            i)  export image="$OPTARG"
+                ;;
+            t)  runtime="-t $(parse_time $OPTARG)" 
+                ;;
+            f)  force=1
                 ;;
             *)  echo "Error: invalid optional argument $OPTARG" 
                 err=1
@@ -211,16 +223,19 @@ do
     fi
 done
 
-[[ $pos_args ]] && echo "Encountered positional arguments where none are required."
+if [[ $pos_args ]]; then
+    echo "Encountered positional arguments where none are required."
+fi
 
 # if there is a conflict between the -s and -b flags
-[[ $sb_conflict = 2 ]] && echo "You cannot use the -s flag and the -b flag simultaneously" && err=1
+if [[ $sb_conflict = 2 ]]; then
+    echo "You cannot use the -s flag and the -b flag simultaneously" 
+    err=1
+fi
 
-if [[ $partition = "debug" ]]; then
-    if [[ $input_runtime -gt 30 ]]; then
-        echo "Invalid runtime for debug queue. Must be less than or equal to 30 minutes"
-        err=1
-    fi
+if [[ ${partition##* } = "debug" && ${runtime##* } > 30 ]]; then
+    echo "Invalid runtime for debug queue. Must be less than or equal to 30 minutes"
+    err=1
 fi
 
 if [[ $project = "" && $require_account = 1 ]]; then
@@ -228,6 +243,9 @@ if [[ $project = "" && $require_account = 1 ]]; then
     err=1
 fi
 
-[[ $err = 1 ]] && usage && exit 1
+if [[ $err = 1 ]]; then
+    usage 
+    exit 1
+fi
 
 start-jupyter

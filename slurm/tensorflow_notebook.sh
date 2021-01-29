@@ -12,27 +12,30 @@
 ## You can add your own slurm directives here, but they will override
 ## anything you gave to the start-jupyter script like the time, partition, etc
 
+#module load singularity
+#singularity run /share/apps/gpu/singularity/sdsc_ubuntu_gpu_tf.1.5.img
+
 # DO NOT EDIT BELOW THIS LINE
 source $start_root/lib/check_available.sh
 source $start_root/lib/get_jupyter_port.sh
-echo $image
+
+PORT=8888
+url='"https://manage.$endpoint/redeemtoken.cgi?token=$api_token&port=$PORT"'
+eval curl $url
+
 # Get the comet node's IP (really just the hostname)
 IP=$(hostname -s).local
 check_available jupyter-notebook "Try 'conda install jupyter'" || exit 1
-if [[ $image = "" ]]; then
-jupyter notebook --ip $IP --config $config --no-browser &
-else
-(singularity exec --cleanenv $image jupyter notebook --ip $IP --config $config --no-browser --notebook-dir $HOME ) &
-fi
+(singularity exec --cleanenv /share/apps/gpu/singularity/images/tensorflow/tensorflow-v2.3.0-gpu-20200929.simg jupyter notebook --ip $IP --config $config --no-browser --notebook-dir $HOME ) &
 
+# get the pid of 'task 1', get shell running the previous singularity command
 # the jupyter pid is stored in the variable $!
-PORT=$(get_jupyter_port $!)
-
+#PORT=$(get_jupyter_port $!)
+#url='"https://manage.$endpoint/redeemtoken.cgi?token=$api_token&port=$PORT"'
 # redeem the api_token given the untaken port
-url='"https://manage.$endpoint/redeemtoken.cgi?token=$api_token&port=$PORT"'
 
 # Redeem the api_token
-eval curl $url
+#eval curl $url
 
 # try to remove the config file.
 #rm -f $config
