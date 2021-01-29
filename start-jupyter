@@ -97,7 +97,7 @@ function start-jupyter () {
     remove_old_files $jup_conf_dir 10
 
     # Make a random ssl token
-    jupyter_token="$(openssl rand -hex 16)"
+    export jupyter_token="$(openssl rand -hex 16)"
     make_jupyter_config $config $jupyter_token $jup_root_dir
 
     # Give the user their url

@@ -30,10 +30,11 @@ while [[ -z $GREP_OUT ]]; do
     RUNTIME_FILE="$(grep -lr $jupyter_token $JUP_PATH)"
     GREP_OUT=$(grep -P $PORT_REGEX $RUNTIME_FILE)
 done
-PORT=${GREP_OUT#*'"port": '}
-PORT=${PORT:0:4}
-
+PORT=${GREP_OUT#*'"port":'}
+PORT=${PORT:0:5}
+echo Port: $PORT
 url='"https://manage.$endpoint/redeemtoken.cgi?token=$api_token&port=$PORT"'
+eval echo $url
 # redeem the api_token given the untaken port
 eval curl $url
 

@@ -14,28 +14,35 @@
 
 # DO NOT EDIT BELOW THIS LINE
 source $start_root/lib/check_available.sh
-source $start_root/lib/get_jupyter_port.sh
 echo $image
 # Get the comet node's IP (really just the hostname)
 IP=$(hostname -s).local
 check_available jupyter-notebook "Try 'conda install jupyter'" || exit 1
 if [[ $image = "" ]]; then
-jupyter notebook --ip $IP --config $config --no-browser &
+    jupyter notebook --ip $IP --config $config --no-browser --notebook-dir $HOME &
 else
-(singularity exec --cleanenv $image jupyter notebook --ip $IP --config $config --no-browser --notebook-dir $HOME ) &
+    (singularity exec --cleanenv $image jupyter notebook --ip $IP --config $config --no-browser --notebook-dir $HOME ) &
 fi
 
+# get the pid of 'task 1', get shell running the previous singularity command
 # the jupyter pid is stored in the variable $!
-PORT=$(get_jupyter_port $!)
+GREP_OUT=""
+while [[ -z $GREP_OUT ]]; do
+    sleep 1
+    PORT_REGEX='^\s*\"port\":\s*\d+,$'
+    JUP_PATH=$(jupyter --runtime-dir)
+    RUNTIME_FILE="$(grep -lr $jupyter_token $JUP_PATH)"
+    GREP_OUT=$(grep -P $PORT_REGEX $RUNTIME_FILE)
+done
+PORT=${GREP_OUT#*'"port": '}
+PORT=${PORT:0:4}
 
-# redeem the api_token given the untaken port
 url='"https://manage.$endpoint/redeemtoken.cgi?token=$api_token&port=$PORT"'
-
-# Redeem the api_token
+# redeem the api_token given the untaken port
 eval curl $url
 
 # try to remove the config file.
-#rm -f $config
+(sleep 2 && rm -f $config)
 
 # waits for all child processes to complete, which means it waits for the jupyter notebook to be terminated
 wait
