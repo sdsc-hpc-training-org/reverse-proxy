@@ -81,8 +81,14 @@ To start a notebook using the debug queue in /share/apps/compute for 30 minutes:
 To start a notebook using the compute queue in your home directory for 60 minutes: 
 `./start-jupyter -d ~ -p compute -t 60`
 
-To start a jupyterlab server on Comet or Stratus
-`./start-jupyter -b slurm/jupyterlab.sh`
+To start a jupyterlab server 
+`./start-jupyter -s jupyterlab`
 
-To start a jupyterlab server on TSCC
-`start-jupyter -b torque/jupyterlab.sh` 
+To start a notebook server
+`./start-jupyter -s notebook`
+
+To start a notebook with a single gpu
+`./start-jupyter -p gpu-shared -g 1 -d ~`
+
+To start a notebook with a tensorflow container
+`./start-jupyter -t 00:30:00 -g 1 -p gpu-shared -i /share/apps/gpu/singularity/images/tensorflow/tensorflow-v2.3.0-gpu-20200929.simg`

@@ -167,14 +167,14 @@ function start-jupyter () {
 }
 
 usage() { 
-    echo "Usage: $0 [-p <string>] [-d <string>] [-A <string>] [-b <string>] [-t time] [-i]" 1>&2;
+    echo "Usage: $0 [-p <string>] [-d <string>] [-A <string>] [-b <string>] [-t time] [-s 'notebook' | 'jupyterlab'] [-i <string>] [-I]" 1>&2;
     echo -e "-p: the partition to use, debug or compute. Default is compute" 1>&2;
     echo -e "-d: the top-level directory of your jupyter notebook. Default is /home/$USER" 1>&2;
     echo -e "-A: the project allocation to be used for this notebook. Default is system default (also called project or group)" 1>&2;
     echo -e "-b: the batch script you want to submit. Only those in the batch folder are supported. Default is ./batch/batch_notebook.sh" 1>&2;
-    echo "-t: the time to run the notebook. Default is 30 minutes" 1>&2;
-    echo "-i: Get extra information about the job you submitted using the script" 1>&2;
-    echo "-s: Choose between 'notebook' and 'jupyterlab'"
+    echo "-s: Choose between 'notebook' and 'jupyterlab'" 1>&2;
+    echo "-i: Choose a singularity container to start your notebook in." 1>&2;
+    echo "-I: Get extra information about the job you submitted using the script" 1>&2;
 }
 
 OPTIND=1
