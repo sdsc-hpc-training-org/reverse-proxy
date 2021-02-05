@@ -7,7 +7,7 @@
 
 ## ====================================================================================
 ## Usage
-##  ./start-jupyter [-p <string>] [-d <string>] [-b <string>] [-t <number>] [-s <jupyerlab, notebook>]
+##  ./start-jupyter [-p <string>] [-d <string>] [-b <string>] [-t <number>] [-s <jupyerlab, notebook>] [-i <string:image>] [-I]
 ##
 ##      -p: The partition your job will be started on. This can be either compute or
 ##          debug. Reminder that the debug queue has a max time of 30 minutes.
@@ -29,6 +29,12 @@
 ##
 ##      -s: The server to run for the user, can be 'notebook' for jupyter notebook or 
 ##          'jupyterlab' for jupyterlab. Cannot be used simultaneously with the -b flag.
+##
+##      -g: When using gpu-shared partitions, the number of gpus to use (0-3).
+##
+##      -i: The singularity image to use as an environment for the notebook.
+##
+##      -I: print the environment variables along with submission. 
 ##
 ## =====================================================================================
 source $PWD/lib/check_available.sh
@@ -172,9 +178,10 @@ usage() {
     echo -e "-d: the top-level directory of your jupyter notebook. Default is /home/$USER" 1>&2;
     echo -e "-A: the project allocation to be used for this notebook. Default is system default (also called project or group)" 1>&2;
     echo -e "-b: the batch script you want to submit. Only those in the batch folder are supported. Default is ./batch/batch_notebook.sh" 1>&2;
-    echo "-s: Choose between 'notebook' and 'jupyterlab'" 1>&2;
-    echo "-i: Choose a singularity container to start your notebook in." 1>&2;
-    echo "-I: Get extra information about the job you submitted using the script" 1>&2;
+    echo -e "-s: Choose between 'notebook' and 'jupyterlab'" 1>&2;
+    echo -e "-g: Number of gpus to use for gpu shared partitions" 1>&2;
+    echo -e "-i: Choose a singularity container to start your notebook in." 1>&2;
+    echo -e "-I: Get extra information about the job you submitted using the script" 1>&2;
 }
 
 OPTIND=1
