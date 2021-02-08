@@ -35,7 +35,7 @@ https://aversion-runaround-spearman.comet-user-content.sdsc.edu?token=099aa825b1
 ```
 
 ### Usage
-`./start-jupyter [-p <string>] [-d <string>] [-A <string>] [-b <string>] [-t time] [-i]`
+`./start-jupyter [-p <cluster partition>] [-d <path to start dir>] [-A <account>] [-b <path to batch file>] [-t <time>] [-g <number of gpus (1-3)> [-i <string>] [-I]`
 
 ```
 
@@ -54,7 +54,11 @@ https://aversion-runaround-spearman.comet-user-content.sdsc.edu?token=099aa825b1
 -t: the time to run the notebook. Your account will be charged for the time you put here so be careful.
     Default time is 30 minutes
     
--i: Get extra information about the job you submitted using the script
+-g: number of gpus to collect for your notebook. Currently only support 1-3 on gpu-shared partitions.
+    
+-i: path to a singularity image to start your jupyter notebook in. Make sure everything, including jupyter notebook and/or jupyter lab is installed in this image.
+    
+-I: get extra information about the job you submitted using the script
 
 ```
 (If you don't know what $USER is, try this command: `echo $USER`. This is just your comet username)
@@ -92,3 +96,6 @@ To start a notebook with a single gpu
 
 To start a notebook with a tensorflow container
 `./start-jupyter -t 00:30:00 -g 1 -p gpu-shared -i /share/apps/gpu/singularity/images/tensorflow/tensorflow-v2.3.0-gpu-20200929.simg`
+
+To start a notebook with a pytorch container
+`./start-jupyter -t 00:30:00 -g 1 -p gpu-shared -i /share/apps/gpu/singularity/images/pytorch/pytorch`
