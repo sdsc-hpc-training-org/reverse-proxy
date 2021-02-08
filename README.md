@@ -98,4 +98,4 @@ To start a notebook with a tensorflow container
 `./start-jupyter -t 00:30:00 -g 1 -p gpu-shared -i /share/apps/gpu/singularity/images/tensorflow/tensorflow-v2.3.0-gpu-20200929.simg`
 
 To start a notebook with a pytorch container
-`./start-jupyter -t 00:30:00 -g 1 -p gpu-shared -i /share/apps/gpu/singularity/images/pytorch/pytorch`
+`./start-jupyter -t 00:30:00 -g 1 -p gpu-shared -i /share/apps/gpu/singularity/images/pytorch/pytorch-gpu.simg`
