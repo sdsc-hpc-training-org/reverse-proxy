@@ -12,17 +12,20 @@
 ## You can add your own slurm directives here, but they will override
 ## anything you gave to the start-jupyter script like the time, partition, etc
 
+#SBATCH -t 00:30:00
+#SBATCH -p gpu-debug
+#SBATCH --gpus=4
+#SBATCH -A ddp363 
+#SBATCH --ntasks-per-node=1
+#SBATCH --nodes=1
+
 # DO NOT EDIT BELOW THIS LINE
 source $start_root/lib/check_available.sh
-echo $image
+
 # Get the comet node's IP (really just the hostname)
 IP=$(hostname -s).local
 check_available jupyter-notebook "Try 'conda install jupyter'" || exit 1
-if [[ $image = "" ]]; then
-    jupyter notebook --ip $IP --config $config --no-browser --notebook-dir $HOME &
-else
-    (singularity exec --cleanenv $image jupyter notebook --ip $IP --config $config --no-browser --notebook-dir $HOME ) &
-fi
+jupyter notebook --ip $IP --config $config --no-browser --notebook-dir $HOME &
 
 # get the pid of 'task 1', get shell running the previous singularity command
 # the jupyter pid is stored in the variable $!

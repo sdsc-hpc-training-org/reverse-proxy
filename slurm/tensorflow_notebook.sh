@@ -14,15 +14,11 @@
 
 # DO NOT EDIT BELOW THIS LINE
 source $start_root/lib/check_available.sh
-echo $image
+
 # Get the comet node's IP (really just the hostname)
 IP=$(hostname -s).local
 check_available jupyter-notebook "Try 'conda install jupyter'" || exit 1
-if [[ $image = "" ]]; then
-    jupyter notebook --ip $IP --config $config --no-browser --notebook-dir $HOME &
-else
-    (singularity exec --cleanenv $image jupyter notebook --ip $IP --config $config --no-browser --notebook-dir $HOME ) &
-fi
+(singularity exec --cleanenv /share/apps/gpu/singularity/images/tensorflow/tensorflow-v2.3.0-gpu-20200929.simg jupyter notebook --ip $IP --config $config --no-browser --notebook-dir $HOME ) &
 
 # get the pid of 'task 1', get shell running the previous singularity command
 # the jupyter pid is stored in the variable $!
