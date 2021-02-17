@@ -39,6 +39,7 @@ source lib/remove_old_files.sh
 source lib/read_config.sh
 
 INFO=0
+QUIET=0
 jup_root_dir=""
 runtime=""
 project=""
@@ -97,9 +98,9 @@ function start-jupyter () {
 
     # Give the user their url
     export jupyter_url="https://$api_token.$endpoint?token=$jupyter_token"
-    echo Your notebook is here:
-    echo -e "\t$jupyter_url"
-    echo "If you encounter any issues, please email help@xsede.org and mention the Reverse Proxy Service."
+    [[ $QUIET = 0 ]] && echo Your notebook is here:
+    [[ $QUIET = 0 ]] && echo -e "\t$jupyter_url" || echo "$jupyter_url"
+    [[ $QUIET = 0 ]] && echo "If you encounter any issues, please email help@xsede.org and mention the Reverse Proxy Service."
 
     partition="-p $partition"
 
@@ -131,6 +132,7 @@ function start-jupyter () {
         echo "Api token: $api_token"
         echo "Jupyter token: $jupyter_token"
         echo "Runtime: $runtime"
+	echo "Quiet: $QUIET"
         echo "***********************************************************"
     fi
 
@@ -180,7 +182,7 @@ err=0
 sb_conflict=0
 while [ $OPTIND -le "$#" ]
 do
-    if getopts "h?:d:A:s:p:b:t:i" opt; then
+    if getopts "h?:d:A:s:p:b:t:iq" opt; then
         case "$opt" in
             h|\?)
                 usage 
@@ -200,6 +202,8 @@ do
                 ;;
             i)  INFO=1 
                 ;;
+	    q)  QUIET=1
+		;;
             t)  input_runtime=$OPTARG 
                 runtime=$(parse_time $OPTARG) 
                 ;;
