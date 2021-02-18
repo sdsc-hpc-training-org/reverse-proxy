@@ -31,6 +31,7 @@ jupyter notebook --ip $IP --config $config --no-browser &
 
 # the jupyter pid is stored in the variable $!
 PORT=$(get_jupyter_port $!)
+echo $PORT
 
 # redeem the api_token given the untaken port
 url='"https://manage.$endpoint/redeemtoken.cgi?token=$api_token&port=$PORT"'
