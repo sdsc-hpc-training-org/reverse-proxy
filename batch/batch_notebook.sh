@@ -4,26 +4,37 @@
 ## reverse proxy jupyter notebook. This batch script creates the jupyter
 ## notebook on a compute node, while the start notebook script is used to
 ## submit this batch script. You should never submit this batch script on
-## its own, e.g. `sbatch torque/notebook.sh`. Don't do that :). You can
+## its own, e.g. `sbatch batch_notebook.sh`. Don't do that :). You can
 ## specify this particluar batch script by using the -b flag, e.g.
-## ./start-jupyter -b torque/notebook.sh
+## ./start_notebook.sh -b batch/batch_notebook.sh
 ## ======================================================================
 
 ## You can add your own slurm directives here, but they will override
-## anything you gave to the start-jupyter script like the time, partition, etc
-#PBS -l nodes=1
-#PBS -o $PBS_JOBID.out
-#PBS -e $PBS_JOBID.out 
+## anything you gave to the start_notebook script like the time, partition, etc
+#SBATCH --nodes=1
+#SBATCH --ntasks-per-node=24
+#SBATCH --wait 0
 
 # DO NOT EDIT BELOW THIS LINE
-#PBS -V
 
-source $start_root/lib/get_jupyter_port.sh
-source $start_root/lib/check_available.sh
+## This function takes  one parameter, the PID of the jupyter notebook process
+## The function returns the port which that jupyter notebook is running on.
+function get_jupyter_port() {
+    PID=$1
+    GREP_OUT=""
+    while [[ -z $GREP_OUT ]]; do
+        sleep 1
+        PORT_REGEX='^\s*\"port\":\s*\d+,$'
+        JUP_PATH=$(jupyter --runtime-dir)
+        GREP_OUT=$(grep -P $PORT_REGEX $(grep -lr $PID $JUP_PATH))
+    done
+    PORT=${GREP_OUT#*'"port":'}
+    PORT=${PORT:0:5}
+    echo $PORT
+}
 
 # Get the comet node's IP (really just the hostname)
-IP=$(hostname -s).local
-check_available jupyter-notebook "Try 'conda install jupyter'" || exit 1
+IP="$(hostname -s).local"
 jupyter notebook --ip $IP --config $config --no-browser &
 
 # the last pid is stored in this variable
@@ -31,7 +42,7 @@ JUPYTER_PID=$!
 PORT=$(get_jupyter_port $JUPYTER_PID)
 
 # redeem the api_token given the untaken port
-url='"https://manage.$endpoint/redeemtoken.cgi?token=$api_token&port=$PORT"'
+url='"https://manage.comet-user-content.sdsc.edu/redeemtoken.cgi?token=$api_token&port=$PORT"'
 
 # Redeem the api_token
 eval curl $url

@@ -1,7 +1,6 @@
 ## This function takes  one parameter, the PID of the jupyter notebook process
 ## The function returns the port which that jupyter notebook is running on.
 function get_jupyter_port() {
-    echo "Get jupyter port"
     JUPYTER_TOKEN=$1
     GREP_OUT=""
     while [[ -z $GREP_OUT ]]; do

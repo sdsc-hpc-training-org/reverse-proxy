@@ -44,6 +44,7 @@ source $PWD/lib/remove_old_files.sh
 source $PWD/lib/read_config.sh
 source $PWD/lib/make_jupyter_config.sh
 
+quiet=0
 info=0
 force=0
 gpus=""
@@ -108,9 +109,9 @@ function start-jupyter () {
 
     # Give the user their url
     export jupyter_url="https://$api_token.$endpoint?token=$jupyter_token"
-    echo "Your notebook is here:"
-    echo -e "\t$jupyter_url"
-    echo "If you encounter any issues, please email help@xsede.org and mention the Reverse Proxy Service."
+    [[ $quiet = 0 ]] && echo "Your notebook is here:"
+    [[ $quiet = 0 ]] && echo -e "\t$jupyter_url" || echo "$jupyter_url"
+    [[ $quiet = 0 ]] && echo "If you encounter any issues, please email help@xsede.org and mention the Reverse Proxy Service."
 
     export start_root="$PWD"
 
@@ -122,7 +123,7 @@ function start-jupyter () {
     
     if [[ $script = "" ]]; then
         script=./$batch_dir/"$server".sh
-        echo "Using $script"
+        [[ $queit = 0 ]] && echo "Using $script"
     fi
 
     if [[ $info -eq 1 ]]; then
@@ -136,6 +137,7 @@ function start-jupyter () {
         echo "Api token: $api_token"
         echo "Jupyter token: $jupyter_token"
         echo "Runtime: $runtime"
+    	echo "Quiet: $QUIET"
         echo "GPUS: $gpus"
         echo "***********************************************************"
     fi
@@ -149,8 +151,8 @@ function start-jupyter () {
         fi  
         if [[ $sbr =~ Submitted\ batch\ job\ ([0-9]+) ]]; then
             slurm_id=${BASH_REMATCH[1]}
-            echo Your job id is $slurm_id
-            echo "You may occasionally run the command 'squeue -j $slurm_id' to check the status of your job"
+            [[ $quiet = 0 ]] && echo Your job id is $slurm_id
+            [[ $quiet = 0 ]] && echo "You may occasionally run the command 'squeue -j $slurm_id' to check the status of your job"
             cleanup_slurm $slurm_id $config &
             exit 0
         else
@@ -158,17 +160,19 @@ function start-jupyter () {
             exit 1
         fi
     elif [[ $manager = "torque" ]]; then
-        qout=$(qsub -l walltime="${runtime#-t **}" $project $script)
-        if [[ $qout =~ [0-9]+.tscc-mgr[0-9].local ]]; then
-            qid="$(echo "${BASH_REMATCH[@]}" | sed 's/[^0-9]*//g')"
-            echo $qid
+        qout=$(qsub -l walltime=${runtime#-t **} $project $script)
+        if [[ "$qout" =~ [0-9]+.tscc-mgr[0-9].local ]]; then
+            qid=$(echo "${BASH_REMATCH[@]}" | sed 's/[^0-9]*//g')
+	    qid="${qid:0:${#qid}-1}"
+            [[ $quiet = 0 ]] && echo "Your job id is $qid"
+	    [[ $quiet = 0 ]] && echo "You may occasionally run the command 'qstat $qid' to check the status of your job"
             exit 0
         else
-            echo Torque failed
+            echo "Torque failed"
             exit 1
         fi
     else
-        echo No queue system found. Please use slurm or torque
+        echo "No queue system found. Please use slurm or torque"
     fi
 }
 
@@ -189,36 +193,31 @@ err=0
 sb_conflict=0
 while [ $OPTIND -le "$#" ]
 do
-    if getopts "h?:d:A:g:s:p:b:t:i:fI" opt; then
+    if getopts "h?:d:A:g:s:p:b:t:i:fIq" opt; then
         case "$opt" in
             h|\?)
                 usage 
                 exit 0
                 ;;
-            g)  gpus="--gres=gpu:$OPTARG"
-                echo $gpus
-                ;;
+            g)  gpus="--gres=gpu:$OPTARG";;
             s)  server="$OPTARG"
                 sb_conflict="$((sb_conflict+1))"
                 ;;
-            d)  jup_root_dir="$OPTARG"
-                ;;
+            d)  jup_root_dir="$OPTARG";;
             A)  project="-A $OPTARG" 
-                echo  $project
                 ;;
-            p)  partition="-p $OPTARG"
-                ;;
+            p)  partition="-p $OPTARG" ;;
             b)  script="$OPTARG"
                 sb_conflict="$((sb_conflict+1))"
                 ;;
-            I)  info=1 
-                ;;
-            i)  export image="$OPTARG"
-                ;;
-            t)  runtime="-t $(parse_time $OPTARG)" 
-                ;;
-            f)  force=1
-                ;;
+            i)  export image="$OPTARG" ;;
+            t)  runtime="-t $(parse_time $OPTARG)" ;;
+            t)  input_runtime=$OPTARG 
+                runtime=$(parse_time $OPTARG) 
+		;;
+            f)  force=1 ;;
+	        q)  quiet=1 ;;
+            I)  info=1;;
             *)  echo "Error: invalid optional argument $OPTARG" 
                 err=1
                 ;;
