@@ -42,6 +42,8 @@ batch_script=""
 # notebook. Its not recommended that you change anything in this function.
 function start_notebook () {
 
+    echo "start_notebook is deprecated and will be removed by February 28th, 2021. Please use start-jupyter instead"
+
     # get the Reverse proxy API_TOKEN
     api_token_response=$(curl -s https://manage.comet-user-content.sdsc.edu/getlink.cgi)
     api_token=${api_token_response#*"Your token is "} #strip the token out of response
