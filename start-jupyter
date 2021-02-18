@@ -32,6 +32,14 @@
 ##
 ## =====================================================================================
 
+cd `dirname "$0"`
+
+module purge
+module load cpu
+module load gcc/10.2.0
+module load anaconda3
+module load slurm/expanse/20.02.3
+
 source lib/check_available.sh
 source lib/parse_time.sh
 source lib/jup_cleanup.sh
@@ -136,7 +144,7 @@ function start-jupyter () {
 
     # if sbatch is available, submit a job using that.
     if [[ $queue = slurm ]]; then
-        sbr=$(sbatch $runtime $project $partition $script)
+        sbr=$(/cm/shared/apps/slurm/current/bin/sbatch $runtime $project $partition $script)
         if [[ "$sbr" =~ Submitted\ batch\ job\ ([0-9]+) ]]; then
             slurm_id=${BASH_REMATCH[1]}
             echo Your job id is $slurm_id
