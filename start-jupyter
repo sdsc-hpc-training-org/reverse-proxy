@@ -149,6 +149,7 @@ function start-jupyter () {
         else
             sbr="$(sbatch $runtime $project $partition $gpus $script)"
         fi  
+	echo $sbr
         if [[ $sbr =~ Submitted\ batch\ job\ ([0-9]+) ]]; then
             slurm_id=${BASH_REMATCH[1]}
             [[ $quiet = 0 ]] && echo Your job id is $slurm_id

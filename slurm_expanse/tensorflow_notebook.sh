@@ -17,17 +17,18 @@
 #SBATCH --ntasks-per-node=1
 #SBATCH --nodes=1
 #SBATCH --gpus=1
-#SBATCH --no-requeue
 #SBATCH -t 01:00:00
 
 module purge
 module load gpu
 module load slurm
+module load anaconda3
+
 # DO NOT EDIT BELOW THIS LINE
 source $start_root/lib/check_available.sh
 
 # Get the comet node's IP (really just the hostname)
-IP=$(hostname -s).local
+IP="$(hostname -s).local"
 check_available jupyter-notebook "Try 'conda install jupyter'" || exit 1
 jupyter notebook --ip $IP --config $config --no-browser --notebook-dir $HOME &
 
