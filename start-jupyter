@@ -221,7 +221,7 @@ do
                 runtime=$(parse_time $OPTARG) 
 		;;
             f)  force=1 ;;
-	        q)  quiet=1 ;;
+	    q)  quiet=1 ;;
             I)  info=1;;
             *)  echo "Error: invalid optional argument $OPTARG" 
                 err=1
