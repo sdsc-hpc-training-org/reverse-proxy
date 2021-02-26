@@ -72,7 +72,12 @@ batch_dir="${vars[4]}"
 
 # Its not recommended that you change anything in this function.
 function start-jupyter () {
-
+    cluster=$(echo $endpoint | sed 's/-.*//')
+    if [[ $cluster = "expanse" ]]; then
+        gpus="--gpus=$gpus"
+    else
+        gpus="--gres=gpu:$gpus"
+    fi
     # get the Reverse proxy API_TOKEN
     response="$(curl -s -w %{http_code} https://manage.$endpoint/getlink.cgi -o -)"
     status="$(echo $response | awk '{print $NF}')"
@@ -199,7 +204,7 @@ do
                 usage 
                 exit 0
                 ;;
-            g)  gpus="--gres=gpu:$OPTARG";;
+            g)  gpus="$OPTARG";;
             s)  server="$OPTARG"
                 sb_conflict="$((sb_conflict+1))"
                 ;;
