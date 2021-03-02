@@ -1,4 +1,9 @@
 ## Jupyter Reverse Proxy Service (HTTPS)
+
+### For full instructions on how to run notebooks on SDSC HPC systems, see:
+[https://hpc-training.sdsc.edu/notebooks-101/notebook-101.html
+](https://hpc-training.sdsc.edu/notebooks-101/notebook-101.html
+)
 * Connection to Notebook over HTTPS using the [Reverse Proxy Service](https://github.com/sdsc-hpc-training-org/reverse-proxy)  (very secure)
 <!-- reverse-proxy 101 repo -->
 
