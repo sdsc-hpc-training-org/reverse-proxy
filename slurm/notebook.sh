@@ -15,6 +15,9 @@
 # DO NOT EDIT BELOW THIS LINE
 source $start_root/lib/check_available.sh
 
+echo $image
+echo $env
+
 # Get the comet node's IP (really just the hostname)
 IP=$(hostname -s).local
 if [[ $image = "" ]]; then

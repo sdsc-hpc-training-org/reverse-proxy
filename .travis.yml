@@ -1,0 +1,2 @@
+language: bash
+script: ssh jamesmcd@comet.sdsc.edu ~/Code/reverse-proxy/start-jupyter
