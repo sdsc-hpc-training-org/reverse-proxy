@@ -50,7 +50,7 @@ gpus=""
 jup_root_dir="/home/$USER"
 runtime="-t 00:30:00"
 project=""
-image=""
+env_path=""
 server="notebook"
 jup_msg="Jupyter not installed. To learn how to install Jupyter using Miniconda, check out this link: https://comet-notebooks-101.readthedocs.io/en/comet/prerequisites.html"
 
@@ -226,9 +226,9 @@ do
             t)  runtime="-t $(parse_time $OPTARG)" ;;
             x)  export env="local";;
             y)  export env="conda"
-                image="$OPTARG";;
+                export env_path="$OPTARG";;
             z)  export env="singularity"
-                image="$OPTARG";;
+                export env_path="$OPTARG";;
             f)  force=1 ;;
             q)  quiet=1 ;;
             i)  info=1;;
