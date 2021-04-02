@@ -117,6 +117,7 @@ function start-jupyter () {
     [[ $quiet = 0 ]] && echo "Your notebook is here:"
     [[ $quiet = 0 ]] && echo -e "\t$jupyter_url" || echo "$jupyter_url"
     [[ $quiet = 0 ]] && echo "If you encounter any issues, please email help@xsede.org and mention the Reverse Proxy Service."
+    [[ $quiet = 0 ]] && echo "If you're not on Xsede, please email consult@sdsc.edu instead."
 
     export start_root="$PWD"
 
