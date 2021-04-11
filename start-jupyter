@@ -190,8 +190,7 @@ usage() {
 " 1>&2;
     echo -e "-b: The batch script you want to submit. Of course the batch script needs to start a jupyter notebook otherwise this script will fail. Cannot be used simultaneously with the -s flag. Default: ./batch/batch_notebook.sh.  " 1>&2;
     echo -e "-t: The time in MINTUES that you want the jupyter notebook to run for. Default: 30 minutes. " 1>&2;
-    echo -e "-s: The server to run for the user, can be 'notebook' for jupyter notebook or 'jupyterlab' for jupyterlab. 
-                 Cannot be used simultaneously with the -b flag. " 1>&2;
+    echo -e "-s: The server to run for the user, can be 'notebook' for jupyter notebook or 'jupyterlab' for jupyterlab. Cannot be used simultaneously with the -b flag. " 1>&2;
     echo -e "-g: When using gpu-shared partitions, the number of gpus to use (0-3). " 1>&2;
     echo -e "-i: The singularity image to use as an environment for the notebook. " 1>&2;
     echo -e "-I: "print the environment variables along with submission. " 1>&2;
