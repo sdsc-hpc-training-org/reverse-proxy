@@ -195,17 +195,7 @@ usage() {
     echo -e "-g: When using gpu-shared partitions, the number of gpus to use (0-3). " 1>&2;
     echo -e "-i: The singularity image to use as an environment for the notebook. " 1>&2;
     echo -e "-I: "print the environment variables along with submission. " 1>&2;
-##
-###### OLD HELP.  #######
-##   echo -e "-p: the partition to use, debug or compute. Default is compute." 1>&2;
-##    echo -e "-d: the top-level directory of your jupyter notebook. Default is /home/$USER." 1>&2;
-##    echo -e "-A: the project allocation to be used for this notebook. Default is system default (also called project or group)." 1>&2;
-##    echo -e "-b: the batch script you want to submit. Only those in the batch folder are supported. Default is ./batch/batch_notebook.sh" 1>&2;
-##    echo -e "-s: Choose between 'notebook' and 'jupyterlab'" 1>&2;
-##    echo -e "-g: Number of gpus to use for gpu shared partitions" 1>&2;
-##    echo -e "-i: Choose a singularity container to start your notebook in." 1>&2;
-##    echo -e "-I: Get extra information about the job you submitted using the script" 1>&2;
-###### OLD HELP.  #######
+
 }
 
 OPTIND=1
