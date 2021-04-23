@@ -72,7 +72,9 @@ batch_dir="${vars[4]}"
 # Its not recommended that you change anything in this function.
 function start-jupyter () {
     cluster=$(echo $endpoint | sed 's/-.*//')
-    if [[ $cluster = "expanse" ]]; then
+    if [[ $gpus = "" ]]; then
+	gpus=""
+    elif [[ $cluster = "expanse" ]]; then
         gpus="--gpus=$gpus"
     else
         gpus="--gres=gpu:$gpus"
@@ -151,9 +153,9 @@ function start-jupyter () {
         if [[ $force = 1 ]]; then
             sbr="$(sbatch $script)" 
 	elif [[ $project = "" ]]; then
-            sbr="$(sbatch -t $runtime -p $partition "$script")"
+            sbr="$(sbatch -t $runtime -p $partition $gpus "$script")"
         else
-            sbr="$(sbatch -t $runtime -A $project -p $partition "$script")"
+            sbr="$(sbatch -t $runtime -A $project -p $partition $gpus "$script")"
         fi  
         if [[ $sbr =~ Submitted\ batch\ job\ ([0-9]+) ]]; then
             slurm_id=${BASH_REMATCH[1]}
