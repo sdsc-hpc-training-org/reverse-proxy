@@ -32,9 +32,7 @@
 ##
 ##      -g: When using gpu-shared partitions, the number of gpus to use (0-3).
 ##
-##      -i: The singularity image to use as an environment for the notebook.
-##
-##      -I: print the environment variables along with submission. 
+##      -i: print the environment variables along with submission. 
 ##
 ## =====================================================================================
 source $PWD/lib/check_available.sh
@@ -47,11 +45,12 @@ source $PWD/lib/make_jupyter_config.sh
 quiet=0
 info=0
 force=0
+env=""
 gpus=""
 jup_root_dir="/home/$USER"
 runtime="-t 00:30:00"
 project=""
-image=""
+env_path=""
 server="notebook"
 jup_msg="Jupyter not installed. To learn how to install Jupyter using Miniconda, check out this link: https://comet-notebooks-101.readthedocs.io/en/comet/prerequisites.html"
 
@@ -72,7 +71,12 @@ batch_dir="${vars[4]}"
 
 # Its not recommended that you change anything in this function.
 function start-jupyter () {
-
+    cluster=$(echo $endpoint | sed 's/-.*//')
+    if [[ $cluster = "expanse" ]]; then
+        gpus="--gpus=$gpus"
+    else
+        gpus="--gres=gpu:$gpus"
+    fi
     # get the Reverse proxy API_TOKEN
     response="$(curl -s -w %{http_code} https://manage.$endpoint/getlink.cgi -o -)"
     status="$(echo $response | awk '{print $NF}')"
@@ -188,46 +192,57 @@ usage() {
     echo -e "-I: Get extra information about the job you submitted using the script" 1>&2;
 }
 
+# Transform long options to short ones
+for arg in "$@"; do
+  shift
+  case "$arg" in
+    "--help")          set -- "$@" "-h" ;;
+    "--quiet")         set -- "$@" "-q" ;;
+    "--local")         set -- "$@" "-x" ;;
+    "--conda")         set -- "$@" "-y" ;;
+    "--singularity")   set -- "$@" "-z" ;;
+    *)                 set -- "$@" "$arg"
+  esac
+done
+
+# Parse short options
 OPTIND=1
 err=0
 sb_conflict=0
 while [ $OPTIND -le "$#" ]
 do
-    if getopts "h?:d:A:g:s:p:b:t:i:fIq" opt; then
+    if getopts "h?:d:A:g:s:p:b:t:y:z:fiqx" opt; then
         case "$opt" in
-            h|\?)
-                usage 
-                exit 0
-                ;;
-            g)  gpus="--gres=gpu:$OPTARG";;
+            h|\?) usage 
+                  exit 0 ;;
+            g)  gpus="$OPTARG";;
             s)  server="$OPTARG"
-                sb_conflict="$((sb_conflict+1))"
-                ;;
+                sb_conflict="$((sb_conflict+1))" ;;
             d)  jup_root_dir="$OPTARG";;
-            A)  project="-A $OPTARG" 
-                ;;
-            p)  partition="$OPTARG" ;;
+            A)  project="-A $OPTARG" ;;
+            p)  partition="-p $OPTARG" ;;
             b)  script="$OPTARG"
-                sb_conflict="$((sb_conflict+1))"
-                ;;
-            i)  export image="$OPTARG" ;;
+                sb_conflict="$((sb_conflict+1))" ;;
             t)  runtime="-t $(parse_time $OPTARG)" ;;
-            t)  input_runtime=$OPTARG 
-                runtime=$(parse_time $OPTARG) 
-		;;
+            x)  export env="local";;
+            y)  export env="conda"
+                export env_path="$OPTARG";;
+            z)  export env="singularity"
+                export env_path="$OPTARG";;
             f)  force=1 ;;
-	        q)  quiet=1 ;;
-            I)  info=1;;
+            q)  quiet=1 ;;
+            i)  info=1;;
             *)  echo "Error: invalid optional argument $OPTARG" 
                 err=1
                 ;;
         esac
     else
-    	pos_args=1
+        pos_args=1
         err=1
         ((OPTIND++))
     fi
 done
+shift $(expr $OPTIND - 1) # remove options from positional parameters
 
 if [[ $pos_args ]]; then
     echo "Encountered positional arguments where none are required."

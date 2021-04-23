@@ -18,20 +18,37 @@
 
 ## Environment
 module purge
+module load gpu
 module load slurm
+module load anaconda3
+module load singularitypro
 
 # DO NOT EDIT BELOW THIS LINE
 source $start_root/lib/check_available.sh
 source $start_root/lib/get_jupyter_port.sh
+echo "Image: $image"
 
 # Get the expanse node's IP (really just the hostname)
-IP=$(hostname -s).eth.cluster
+IP="$(hostname -s).eth.cluster"
 check_available jupyter-notebook "Try 'conda install jupyter'" || exit 1
-jupyter notebook --ip $IP --config $config --no-browser &
+if [[ $image = "" ]]; then
+    jupyter notebook --ip $IP --config $config --no-browser --notebook-dir $HOME &
+else
+    (singularity exec --cleanenv $image jupyter notebook --ip $IP --config $config --no-browser --notebook-dir $HOME ) &
+fi
 
+# get the pid of 'task 1', get shell running the previous singularity command
 # the jupyter pid is stored in the variable $!
-PORT=$(get_jupyter_port $!)
-echo $PORT
+GREP_OUT=""
+while [[ -z $GREP_OUT ]]; do
+    sleep 1
+    PORT_REGEX='^\s*\"port\":\s*\d+,$'
+    JUP_PATH=$(jupyter --runtime-dir)
+    RUNTIME_FILE="$(grep -lr $jupyter_token $JUP_PATH)"
+    GREP_OUT=$(grep -P $PORT_REGEX $RUNTIME_FILE)
+done
+PORT=${GREP_OUT#*'"port": '}
+PORT=${PORT:0:4}
 
 # redeem the api_token given the untaken port
 url='"https://manage.$endpoint/redeemtoken.cgi?token=$api_token&port=$PORT"'
