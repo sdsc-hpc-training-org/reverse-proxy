@@ -66,7 +66,7 @@ jup_msg="Jupyter not installed. To learn how to install Jupyter using Miniconda,
 vars=($(read_config $(hostname -s)))
 export endpoint="${vars[1]}"
 manager="${vars[2]}"
-partition="-p ${vars[3]}"
+partition="${vars[3]}"
 batch_dir="${vars[4]}"
 [[ $endpoint =~ expanse-* ]] && require_account=1 || require_account=0
 
@@ -147,7 +147,7 @@ function start-jupyter () {
         if [[ $force = 1 ]]; then
             sbr="$(sbatch $script)" 
         else
-            sbr="$(sbatch $runtime $project $partition $gpus $script)"
+            sbr="$(sbatch $runtime $project -p $partition $gpus $script)"
         fi  
         if [[ $sbr =~ Submitted\ batch\ job\ ([0-9]+) ]]; then
             slurm_id=${BASH_REMATCH[1]}
@@ -160,7 +160,7 @@ function start-jupyter () {
             exit 1
         fi
     elif [[ $manager = "torque" ]]; then
-        qout=$(qsub -l walltime=${runtime#-t **} $project $script)
+	qout=$(qsub -l walltime=${runtime#-t **} -q $partition $script)
         if [[ "$qout" =~ [0-9]+.tscc-mgr[0-9].local ]]; then
             qid=$(echo "${BASH_REMATCH[@]}" | sed 's/[^0-9]*//g')
 	    qid="${qid:0:${#qid}-1}"
@@ -206,7 +206,7 @@ do
             d)  jup_root_dir="$OPTARG";;
             A)  project="-A $OPTARG" 
                 ;;
-            p)  partition="-p $OPTARG" ;;
+            p)  partition="$OPTARG" ;;
             b)  script="$OPTARG"
                 sb_conflict="$((sb_conflict+1))"
                 ;;

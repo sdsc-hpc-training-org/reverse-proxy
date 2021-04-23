@@ -11,7 +11,7 @@
 
 ## You can add your own slurm directives here, but they will override
 ## anything you gave to the start-jupyter script like the time, partition, etc
-#PBS -l nodes=1:ppn=3
+#PBS -l nodes=1
 #PBS -o $PBS_JOBID.out
 #PBS -e $PBS_JOBID.out 
 
