@@ -48,7 +48,7 @@ force=0
 env=""
 gpus=""
 jup_root_dir="/home/$USER"
-runtime="-t 00:30:00"
+runtime="00:30:00"
 project=""
 env_path=""
 server="notebook"
@@ -150,8 +150,10 @@ function start-jupyter () {
     if [[ $manager = "slurm" ]]; then
         if [[ $force = 1 ]]; then
             sbr="$(sbatch $script)" 
+	elif [[ $project = "" ]]; then
+            sbr="$(sbatch -t $runtime -p $partition "$script")"
         else
-            sbr="$(sbatch $runtime $project -p $partition $gpus $script)"
+            sbr="$(sbatch -t $runtime -A $project -p $partition "$script")"
         fi  
         if [[ $sbr =~ Submitted\ batch\ job\ ([0-9]+) ]]; then
             slurm_id=${BASH_REMATCH[1]}
@@ -219,11 +221,11 @@ do
             s)  server="$OPTARG"
                 sb_conflict="$((sb_conflict+1))" ;;
             d)  jup_root_dir="$OPTARG";;
-            A)  project="-A $OPTARG" ;;
-            p)  partition="-p $OPTARG" ;;
+            A)  project="$OPTARG" ;;
+            p)  partition="$OPTARG" ;;
             b)  script="$OPTARG"
                 sb_conflict="$((sb_conflict+1))" ;;
-            t)  runtime="-t $(parse_time $OPTARG)" ;;
+            t)  runtime="$(parse_time $OPTARG)" ;;
             x)  export env="local";;
             y)  export env="conda"
                 export env_path="$OPTARG";;
